@@ -1,35 +1,39 @@
-import { Link } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+
+import { MobileTabBar } from './shell/mobile-tab-bar'
+import { SiteFooter } from './shell/site-footer'
+import { SiteHeader } from './shell/site-header'
 
 interface AppShellProps {
   children: ReactNode
 }
 
-// Placeholder layout; header and footer follow the Figma once the design tokens land
+// Unit count from the cart query once the cart slice lands (Fase 5.4)
+const CART_COUNT_PLACEHOLDER = 0
+
+/**
+ * Page frame: header + footer from md up, bottom tab bar below md (mobile frames have no
+ * header). Main is the skip-link target; the footer leaves room for the fixed tab bar.
+ */
 export function AppShell({ children }: AppShellProps) {
+  const cartCount = CART_COUNT_PLACEHOLDER
+
   return (
     <div className="flex min-h-dvh flex-col">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded-sm focus:bg-primary focus:px-4 focus:py-2 focus:font-bold focus:text-primary-foreground"
       >
         Pular para o conteúdo
       </a>
-      <header className="border-b">
-        <nav aria-label="Principal" className="mx-auto flex max-w-7xl items-center px-4 py-4">
-          <Link to="/" className="font-heading text-lg font-semibold">
-            NFT Marketplace
-          </Link>
-        </nav>
-      </header>
+      <SiteHeader cartCount={cartCount} />
       <main id="main" tabIndex={-1} className="flex-1 outline-none">
         {children}
       </main>
-      <footer className="border-t">
-        <div className="mx-auto max-w-7xl px-4 py-6 text-sm text-muted-foreground">
-          NFT Marketplace
-        </div>
-      </footer>
+      <div className="pb-24 md:pb-0">
+        <SiteFooter />
+      </div>
+      <MobileTabBar cartCount={cartCount} />
     </div>
   )
 }

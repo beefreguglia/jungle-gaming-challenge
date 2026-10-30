@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
+import { Route as AuthenticatedContaFavoritosRouteImport } from './routes/_authenticated/conta/favoritos'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -21,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarrinhoRoute = CarrinhoRouteImport.update({
+  id: '/carrinho',
+  path: '/carrinho',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -33,35 +40,55 @@ const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
   path: '/conta',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedContaFavoritosRoute =
+  AuthenticatedContaFavoritosRouteImport.update({
+    id: '/favoritos',
+    path: '/favoritos',
+    getParentRoute: () => AuthenticatedContaRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
-  '/conta': typeof AuthenticatedContaRoute
+  '/conta': typeof AuthenticatedContaRouteWithChildren
+  '/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
-  '/conta': typeof AuthenticatedContaRoute
+  '/conta': typeof AuthenticatedContaRouteWithChildren
+  '/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
-  '/_authenticated/conta': typeof AuthenticatedContaRoute
+  '/_authenticated/conta': typeof AuthenticatedContaRouteWithChildren
+  '/_authenticated/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/conta'
+  fullPaths: '/' | '/carrinho' | '/login' | '/conta' | '/conta/favoritos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/conta'
-  id: '__root__' | '/' | '/_authenticated' | '/login' | '/_authenticated/conta'
+  to: '/' | '/carrinho' | '/login' | '/conta' | '/conta/favoritos'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/carrinho'
+    | '/login'
+    | '/_authenticated/conta'
+    | '/_authenticated/conta/favoritos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  CarrinhoRoute: typeof CarrinhoRoute
   LoginRoute: typeof LoginRoute
 }
 
@@ -81,6 +108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/carrinho': {
+      id: '/carrinho'
+      path: '/carrinho'
+      fullPath: '/carrinho'
+      preLoaderRoute: typeof CarrinhoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -95,15 +129,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContaRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/conta/favoritos': {
+      id: '/_authenticated/conta/favoritos'
+      path: '/favoritos'
+      fullPath: '/conta/favoritos'
+      preLoaderRoute: typeof AuthenticatedContaFavoritosRouteImport
+      parentRoute: typeof AuthenticatedContaRoute
+    }
   }
 }
 
+interface AuthenticatedContaRouteChildren {
+  AuthenticatedContaFavoritosRoute: typeof AuthenticatedContaFavoritosRoute
+}
+
+const AuthenticatedContaRouteChildren: AuthenticatedContaRouteChildren = {
+  AuthenticatedContaFavoritosRoute: AuthenticatedContaFavoritosRoute,
+}
+
+const AuthenticatedContaRouteWithChildren =
+  AuthenticatedContaRoute._addFileChildren(AuthenticatedContaRouteChildren)
+
 interface AuthenticatedRouteChildren {
-  AuthenticatedContaRoute: typeof AuthenticatedContaRoute
+  AuthenticatedContaRoute: typeof AuthenticatedContaRouteWithChildren
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedContaRoute: AuthenticatedContaRoute,
+  AuthenticatedContaRoute: AuthenticatedContaRouteWithChildren,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -113,6 +165,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  CarrinhoRoute: CarrinhoRoute,
   LoginRoute: LoginRoute,
 }
 export const routeTree = rootRouteImport

@@ -32,7 +32,7 @@ function RootComponent() {
         <Outlet />
       </AppShell>
       <Suspense>
-        <RouterDevtools position="bottom-left" />
+        <RouterDevtools position="top-right" />
       </Suspense>
     </>
   )
