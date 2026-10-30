@@ -1,4 +1,5 @@
-import { AUTH_HEADER, bearer } from '@/domain/api-contract'
+import { AUTH_HEADER, bearer, CART_ID_HEADER } from '@/domain/api-contract'
+import { createCartIdStore } from '@/features/cart'
 import {
   createSessionApi,
   createSessionManager,
@@ -38,6 +39,7 @@ export function createAppServices(
 ) {
   const queryClient = createQueryClient()
   const sessionStore = createSessionStore(storage)
+  const cartIds = createCartIdStore(storage)
 
   // The HTTP client must report expired sessions to the manager that depends on it
   let session: SessionManager | undefined
@@ -47,9 +49,12 @@ export function createAppServices(
 
   const http = createHttpClient({
     baseURL: apiUrl,
+    // Members are identified by their token; visitors by the id of their cart
     headers: () => {
       const current = sessionStore.get()
-      return { [AUTH_HEADER]: current ? bearer(current.token) : null }
+      return current
+        ? { [AUTH_HEADER]: bearer(current.token) }
+        : { [CART_ID_HEADER]: cartIds.get() }
     },
     onError: onHttpError,
   })
@@ -71,7 +76,7 @@ export function createAppServices(
     appliers: REALTIME_APPLIERS,
   })
 
-  return { queryClient, http, session, realtime, realtimeSync }
+  return { queryClient, http, session, cartIds, realtime, realtimeSync }
 }
 
 export type AppServices = ReturnType<typeof createAppServices>

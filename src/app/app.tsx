@@ -2,6 +2,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from '@tanstack/react-router'
 import { lazy, Suspense } from 'react'
 
+import { CartIdContext } from '@/features/cart'
 import { SessionContext } from '@/features/session'
 import { HttpClientContext, RealtimeClientContext } from '@/shared/api'
 import { env } from '@/shared/config/env'
@@ -37,9 +38,11 @@ export function App() {
       <HttpClientContext value={services.http}>
         <RealtimeClientContext value={services.realtime}>
           <SessionContext value={services.session}>
-            <TooltipProvider delayDuration={200}>
-              <RouterProvider router={router} />
-            </TooltipProvider>
+            <CartIdContext value={services.cartIds}>
+              <TooltipProvider delayDuration={200}>
+                <RouterProvider router={router} />
+              </TooltipProvider>
+            </CartIdContext>
           </SessionContext>
         </RealtimeClientContext>
       </HttpClientContext>

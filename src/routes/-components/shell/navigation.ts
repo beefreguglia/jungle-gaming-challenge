@@ -17,3 +17,9 @@ export const AUTH_PATHS = ['/login', '/cadastro']
 export function isAuthPath(pathname: string): boolean {
   return AUTH_PATHS.includes(pathname)
 }
+
+// Pages with their own fixed action bar on mobile (NFT detail "Comprar NFT"), which takes
+// the place of the tab bar, as in the mobile frame
+export function hasMobileActionBar(pathname: string): boolean {
+  return pathname.startsWith('/nfts/')
+}

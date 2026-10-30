@@ -1,10 +1,11 @@
 import { useLocation } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 
+import { useCartCount } from '@/features/cart'
 import { cn } from '@/shared/lib/utils'
 
 import { MobileTabBar } from './shell/mobile-tab-bar'
-import { isAuthPath } from './shell/navigation'
+import { hasMobileActionBar, isAuthPath } from './shell/navigation'
 import { SiteFooter } from './shell/site-footer'
 import { SiteHeader } from './shell/site-header'
 
@@ -12,17 +13,17 @@ interface AppShellProps {
   children: ReactNode
 }
 
-// Unit count from the cart query once the cart slice lands (Fase 5.4)
-const CART_COUNT_PLACEHOLDER = 0
-
 /**
  * Page frame: bottom tab bar on mobile (the mobile frames have no header), header + footer
  * from md up. Auth pages are full screen on mobile, so they drop the tab bar and footer
- * there. Main is the skip-link target; the footer leaves room for the fixed tab bar.
+ * there; the NFT detail swaps the tab bar for its buy bar. Main is the skip-link target;
+ * the footer leaves room for whichever bar is fixed at the bottom.
  */
 export function AppShell({ children }: AppShellProps) {
-  const cartCount = CART_COUNT_PLACEHOLDER
-  const fullScreenOnMobile = isAuthPath(useLocation().pathname)
+  const cartCount = useCartCount()
+  const { pathname } = useLocation()
+  const fullScreenOnMobile = isAuthPath(pathname)
+  const actionBar = hasMobileActionBar(pathname)
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -36,10 +37,16 @@ export function AppShell({ children }: AppShellProps) {
       <main id="main" tabIndex={-1} className="flex-1 outline-none">
         {children}
       </main>
-      <div className={cn('pb-24 md:block md:pb-0', fullScreenOnMobile && 'hidden')}>
+      <div
+        className={cn(
+          'pb-24 md:block md:pb-0',
+          fullScreenOnMobile && 'hidden',
+          actionBar && 'pb-44',
+        )}
+      >
         <SiteFooter />
       </div>
-      {fullScreenOnMobile ? null : <MobileTabBar cartCount={cartCount} />}
+      {fullScreenOnMobile || actionBar ? null : <MobileTabBar cartCount={cartCount} />}
     </div>
   )
 }
