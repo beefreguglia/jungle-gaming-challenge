@@ -25,7 +25,12 @@ function socketOrigin(): string {
 function applyUrlSwitches(control: MockControl): void {
   const url = new URL(window.location.href)
   const scenario = url.searchParams.get('scenario')
-  if (scenario) control.setScenario(scenario)
+  // A typo in the URL must not keep the app from booting
+  if (scenario && control.scenarios.some(({ name }) => name === scenario)) {
+    control.setScenario(scenario)
+  } else if (scenario) {
+    console.warn(`[mocks] Unknown scenario "${scenario}", keeping "${control.scenario}"`)
+  }
   if (url.searchParams.has('mock-reset')) control.reset()
 
   if (scenario || url.searchParams.has('mock-reset')) {

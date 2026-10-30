@@ -69,7 +69,8 @@ export interface MockState {
   wallets: Record<string, UserWallets>
 }
 
-// Bump when MockState changes shape: stored data from an older shape is discarded
+// Bump when MockState changes shape OR the seed fixtures change: stored data from an older
+// version is discarded, so nobody keeps browsing a stale catalog after an update
 const SCHEMA_VERSION = 1
 const STORAGE_KEY = 'kurio:mock-db'
 const MAX_QUOTES = 50

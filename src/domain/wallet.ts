@@ -95,13 +95,17 @@ export function ensName(label: string): string {
 // --- Simulated wallet connection (checkout) -------------------------------------------------
 
 // POST /wallet-connections may be refused (403 `wallet_rejected`); DELETE disconnects
-export const walletConnectionInputSchema = z.object({
+const walletConnectionFieldsSchema = z.object({
   provider: walletProviderSchema,
   network: nftNetworkSchema,
-  address: z.string(),
+  address: z.string().trim(),
 })
 
-export const walletConnectionSchema = walletConnectionInputSchema.extend({
+export const walletConnectionInputSchema =
+  walletConnectionFieldsSchema.superRefine(refineWalletAddress)
+
+// Refined schemas cannot be extended, so the response builds on the plain fields
+export const walletConnectionSchema = walletConnectionFieldsSchema.extend({
   id: z.string(),
   connectedAt: z.iso.datetime(),
 })

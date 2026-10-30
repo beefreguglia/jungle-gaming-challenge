@@ -117,7 +117,7 @@ export function saveSecondaryWallet(
   }
   const { primary } = getWallets(backend, user)
   if (!primary) {
-    throw fail.conflict(API_ERROR_CODES.validation, 'Cadastre a carteira principal primeiro')
+    throw fail.validation({ sameAsPrimary: 'Cadastre a carteira principal primeiro' })
   }
   return upsertWallet(backend, user, {
     slot: 'secondary',

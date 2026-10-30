@@ -4,7 +4,7 @@ import { signUpFormSchema } from './auth'
 import { toggleFavorite } from './favorites'
 import { avatarProblem, passwordFormSchema } from './profile'
 import { isValidWalletAddress, shortenHash } from './validation'
-import { secondaryWalletInputSchema } from './wallet'
+import { secondaryWalletInputSchema, walletConnectionInputSchema } from './wallet'
 
 // First message per field, which is what the form displays
 function messages(result: { error?: { issues: { path: PropertyKey[]; message: string }[] } }) {
@@ -59,6 +59,15 @@ describe('wallet addresses', () => {
     expect(isValidWalletAddress('polygon', evm)).toBe(true)
     expect(isValidWalletAddress('solana', evm)).toBe(false)
     expect(isValidWalletAddress('solana', '7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV')).toBe(true)
+  })
+
+  it('rejects a wallet connection whose address does not fit the network', () => {
+    const connection = {
+      provider: 'coinbase',
+      network: 'solana',
+      address: '0x7A42c1d3e5F60718293a4B5c6D7e8F9012a319E8',
+    }
+    expect(walletConnectionInputSchema.safeParse(connection).success).toBe(false)
   })
 
   it('accepts a secondary wallet linked to the primary', () => {

@@ -72,7 +72,14 @@ function socketHandler(backend: Backend, hub: RealtimeHub, origin: string): WebS
       .scenario()
       .failures.some((rule) => rule.status === 'network' && rule.pathPrefix === '/')
     if (offline) {
-      connection.client.close(4001, 'Simulated network failure')
+      // Like a real dropped network: an "error" then the close. Socket.IO only reports
+      // connect_error (and starts its backoff) for errors raised before the handshake
+      setTimeout(() => {
+        // `socket` exists at runtime (MSW itself dispatches errors on it) but is not typed
+        const { socket } = connection.client as unknown as { socket: EventTarget }
+        socket.dispatchEvent(new Event('error'))
+        connection.client.close(4001, 'Simulated network failure')
+      }, 0)
       return
     }
     hub.attach(connection)
@@ -84,7 +91,9 @@ export function createMockServer({
   socketOrigin,
   storage = createStorage(),
 }: MockServerOptions) {
-  let scenarioName = storage.get(SCENARIO_KEY) ?? DEFAULT_SCENARIO
+  // A stored name that no longer exists (renamed scenario) falls back to the default
+  const stored = storage.get(SCENARIO_KEY)
+  let scenarioName = stored && isScenarioName(stored) ? stored : DEFAULT_SCENARIO
   const db = new MockDatabase(storage)
 
   const backend: Backend = {
