@@ -32,3 +32,7 @@ test-results
 reports/playwright
 playwright/.cache
 .lighthouseci
+
+# chrome-launcher on WSL believes it is on Windows and creates Lighthouse's temporary Chrome
+# profiles as folders literally named "C:\Users\…\lighthouse.*" in the project root
+/C:*

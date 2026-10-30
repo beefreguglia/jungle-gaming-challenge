@@ -1,8 +1,9 @@
-// Lighthouse CI config. Profile is chosen via LHCI_PRESET=mobile|desktop.
+// Lighthouse CI config. Profile is chosen via LH_PROFILE=mobile|desktop (not LHCI_*: lhci
+// reads every LHCI_* variable as one of its own CLI options and LHCI_PRESET broke `assert`).
 // Runs against the optimized build (`pnpm build`) with the default mock scenario.
 const { chromium } = require('@playwright/test')
 
-const preset = process.env.LHCI_PRESET === 'desktop' ? 'desktop' : 'mobile'
+const preset = process.env.LH_PROFILE === 'desktop' ? 'desktop' : 'mobile'
 const base = 'http://localhost:4174'
 
 module.exports = {

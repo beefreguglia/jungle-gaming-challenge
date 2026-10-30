@@ -18,8 +18,8 @@
     "test:e2e:update": "playwright test --update-snapshots",
     "test:e2e:report": "playwright show-report reports/playwright",
     "lighthouse": "pnpm build && pnpm lighthouse:mobile && pnpm lighthouse:desktop",
-    "lighthouse:mobile": "LHCI_PRESET=mobile lhci autorun",
-    "lighthouse:desktop": "LHCI_PRESET=desktop lhci autorun",
+    "lighthouse:mobile": "LH_PROFILE=mobile lhci autorun",
+    "lighthouse:desktop": "LH_PROFILE=desktop lhci autorun",
     "lint:fix": "oxlint --fix",
     "prepare": "lefthook install"
   },

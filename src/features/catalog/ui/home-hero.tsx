@@ -23,19 +23,25 @@ function Dots({
   className?: string
 }) {
   return (
-    <div role="group" aria-label="Escolher destaque" className={cn('flex gap-1.5', className)}>
+    <div role="group" aria-label="Escolher destaque" className={cn('flex', className)}>
       {SLIDES.map((slide, index) => (
+        // 24 px touch target (WCAG 2.5.8) around the 8 px dot drawn in the Figma
         <button
           key={slide.url}
           type="button"
           aria-label={`Destaque ${index + 1} de ${SLIDES.length}`}
           aria-current={index === active ? 'true' : undefined}
           onClick={() => onSelect(index)}
-          className={cn(
-            'relative size-2 rounded-full bg-primary/40 transition-colors after:absolute after:-inset-2 hover:bg-primary/70',
-            index === active && 'bg-primary',
-          )}
-        />
+          className="group/dot grid size-6 place-items-center"
+        >
+          <span
+            aria-hidden="true"
+            className={cn(
+              'size-2 rounded-full bg-primary/40 transition-colors group-hover/dot:bg-primary/70',
+              index === active && 'bg-primary',
+            )}
+          />
+        </button>
       ))}
     </div>
   )
