@@ -11,8 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
+import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as UiPreviewRouteImport } from './routes/ui-preview'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
 import { Route as AuthenticatedContaFavoritosRouteImport } from './routes/_authenticated/conta/favoritos'
 
@@ -25,6 +27,11 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CadastroRoute = CadastroRouteImport.update({
+  id: '/cadastro',
+  path: '/cadastro',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CarrinhoRoute = CarrinhoRouteImport.update({
   id: '/carrinho',
   path: '/carrinho',
@@ -33,6 +40,11 @@ const CarrinhoRoute = CarrinhoRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UiPreviewRoute = UiPreviewRouteImport.update({
+  id: '/ui-preview',
+  path: '/ui-preview',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
@@ -49,15 +61,19 @@ const AuthenticatedContaFavoritosRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
+  '/ui-preview': typeof UiPreviewRoute
   '/conta': typeof AuthenticatedContaRouteWithChildren
   '/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
+  '/ui-preview': typeof UiPreviewRoute
   '/conta': typeof AuthenticatedContaRouteWithChildren
   '/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
 }
@@ -65,22 +81,40 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
+  '/ui-preview': typeof UiPreviewRoute
   '/_authenticated/conta': typeof AuthenticatedContaRouteWithChildren
   '/_authenticated/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/carrinho' | '/login' | '/conta' | '/conta/favoritos'
+  fullPaths:
+    | '/'
+    | '/cadastro'
+    | '/carrinho'
+    | '/login'
+    | '/ui-preview'
+    | '/conta'
+    | '/conta/favoritos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/carrinho' | '/login' | '/conta' | '/conta/favoritos'
+  to:
+    | '/'
+    | '/cadastro'
+    | '/carrinho'
+    | '/login'
+    | '/ui-preview'
+    | '/conta'
+    | '/conta/favoritos'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/cadastro'
     | '/carrinho'
     | '/login'
+    | '/ui-preview'
     | '/_authenticated/conta'
     | '/_authenticated/conta/favoritos'
   fileRoutesById: FileRoutesById
@@ -88,8 +122,10 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  CadastroRoute: typeof CadastroRoute
   CarrinhoRoute: typeof CarrinhoRoute
   LoginRoute: typeof LoginRoute
+  UiPreviewRoute: typeof UiPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -108,6 +144,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cadastro': {
+      id: '/cadastro'
+      path: '/cadastro'
+      fullPath: '/cadastro'
+      preLoaderRoute: typeof CadastroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/carrinho': {
       id: '/carrinho'
       path: '/carrinho'
@@ -120,6 +163,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ui-preview': {
+      id: '/ui-preview'
+      path: '/ui-preview'
+      fullPath: '/ui-preview'
+      preLoaderRoute: typeof UiPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/conta': {
@@ -165,8 +215,10 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  CadastroRoute: CadastroRoute,
   CarrinhoRoute: CarrinhoRoute,
   LoginRoute: LoginRoute,
+  UiPreviewRoute: UiPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

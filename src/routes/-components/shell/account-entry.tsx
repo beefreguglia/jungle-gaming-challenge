@@ -1,8 +1,11 @@
 import { Link, useLocation } from '@tanstack/react-router'
 import { LogInIcon } from 'lucide-react'
 
+import { AuthDialog } from '@/features/auth'
 import { useSession } from '@/features/session'
 import { Button } from '@/shared/ui/button'
+
+import { isAuthPath } from './navigation'
 
 function initials(name: string): string {
   return name
@@ -12,24 +15,23 @@ function initials(name: string): string {
     .join('')
 }
 
-/** "Entrar" for visitors (returning to the current page after login), avatar for members. */
+/** "Entrar" for visitors (opens the sign-in dialog over the current page), avatar for members. */
 export function AccountEntry() {
   const { session } = useSession()
-  const location = useLocation()
-  // On the auth pages themselves, keep their own redirect instead of nesting a new one
-  const onAuthPage = ['/login', '/cadastro'].includes(location.pathname)
+  const { pathname } = useLocation()
 
   if (!session) {
+    // The auth pages already show the form
+    if (isAuthPath(pathname)) return null
     return (
-      <Button asChild size="sm" className="h-9 px-3 text-body">
-        <Link
-          to="/login"
-          search={(previous) => (onAuthPage ? previous : { redirect: location.href })}
-        >
-          <LogInIcon className="size-5" />
-          Entrar
-        </Link>
-      </Button>
+      <AuthDialog
+        trigger={
+          <Button size="sm" className="h-9 px-3 text-body">
+            <LogInIcon className="size-5" />
+            Entrar
+          </Button>
+        }
+      />
     )
   }
 
