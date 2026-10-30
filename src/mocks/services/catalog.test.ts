@@ -84,11 +84,11 @@ describe('queryCatalog', () => {
 })
 
 describe('relatedNfts', () => {
-  it('excludes the NFT itself and favors the same series', () => {
+  it('excludes the NFT itself and favors the same category', () => {
     const { backend } = createTestBackend()
     const related = relatedNfts(backend, 'emerald-ape-042')
     expect(related.map((nft) => nft.id)).not.toContain('emerald-ape-042')
-    expect(related[0]?.series).toBe('Kurio Apes')
+    expect(related[0]?.collection).toBe('digital-art')
   })
 })
 

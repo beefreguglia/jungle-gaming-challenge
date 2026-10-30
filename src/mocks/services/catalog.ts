@@ -119,12 +119,15 @@ export function findNftRecord(backend: Backend, id: string): NftRecord {
   return nft
 }
 
-/** "Mais desta coleção": same series first, then same category, excluding the NFT itself. */
+/**
+ * "Mais desta coleção": "coleção" is the catalog category (as in the sidebar), so the same
+ * category comes first, then the same series; the NFT itself is excluded.
+ */
 export function relatedNfts(backend: Backend, id: string, limit = 10): Nft[] {
   const nft = findNftRecord(backend, id)
   const others = backend.db.state.nfts.filter((item) => item.id !== id)
   const score = (item: NftRecord) =>
-    (item.series === nft.series ? 2 : 0) + (item.collection === nft.collection ? 1 : 0)
+    (item.collection === nft.collection ? 2 : 0) + (item.series === nft.series ? 1 : 0)
   return others
     .filter((item) => score(item) > 0)
     .toSorted((a, b) => score(b) - score(a) || b.listedAt.localeCompare(a.listedAt))
