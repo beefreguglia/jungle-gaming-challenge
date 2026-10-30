@@ -1,6 +1,8 @@
 import axios from 'axios'
 import type { ZodType } from 'zod'
 
+import { AUTH_HEADER } from '@/domain/api-contract'
+
 import { ApiError, toApiError } from './api-error'
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -32,9 +34,30 @@ export interface HttpClient {
   delete<T>(url: string, options?: RequestOptions<T>): Promise<T>
 }
 
+type HeaderValues = Record<string, string | null | undefined>
+
+export interface HttpErrorContext {
+  // Whether the failed request carried credentials: a 401 then means the session ended
+  sentAuthorization: boolean
+}
+
 interface HttpClientOptions {
   baseURL: string
   timeoutMs?: number
+  // Evaluated on every request (session token, visitor cart id); null/undefined are skipped
+  headers?: () => HeaderValues
+  // Observes every normalized failure; used by the app to react to expired sessions
+  onError?: (error: ApiError, context: HttpErrorContext) => void
+}
+
+function compactHeaders(...sources: (HeaderValues | undefined)[]): Record<string, string> {
+  const result: Record<string, string> = {}
+  for (const source of sources) {
+    for (const [name, value] of Object.entries(source ?? {})) {
+      if (value != null) result[name] = value
+    }
+  }
+  return result
 }
 
 const DEFAULT_TIMEOUT_MS = 15_000
@@ -56,11 +79,15 @@ function parseBody<T>(data: unknown, schema: ZodType<T> | undefined): T {
 export function createHttpClient({
   baseURL,
   timeoutMs = DEFAULT_TIMEOUT_MS,
+  headers: dynamicHeaders,
+  onError,
 }: HttpClientOptions): HttpClient {
   const instance = axios.create({
     baseURL,
     timeout: timeoutMs,
     headers: { Accept: 'application/json' },
+    // Arrays as repeated keys (`collections=a&collections=b`), the API's query contract
+    paramsSerializer: { indexes: null },
   })
 
   async function request<T>({
@@ -72,18 +99,22 @@ export function createHttpClient({
     signal,
     schema,
   }: RequestConfig<T>) {
+    // Explicit per-request headers win over the dynamic ones
+    const finalHeaders = compactHeaders(dynamicHeaders?.(), headers)
     try {
       const response = await instance.request<unknown>({
         method,
         url,
         data: body,
         params,
-        headers,
+        headers: finalHeaders,
         signal,
       })
       return parseBody(response.data, schema)
     } catch (error) {
-      throw toApiError(error)
+      const apiError = toApiError(error)
+      onError?.(apiError, { sentAuthorization: AUTH_HEADER in finalHeaders })
+      throw apiError
     }
   }
 
