@@ -1,0 +1,206 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc", "import"],
+  "ignorePatterns": ["src/routeTree.gen.ts", "public/mockServiceWorker.js"],
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+
+    // SRP — keep modules, functions and trees small and focused
+    "max-lines": ["warn", { "max": 300, "skipBlankLines": true, "skipComments": true }],
+    "max-lines-per-function": [
+      "warn",
+      { "max": 120, "skipBlankLines": true, "skipComments": true }
+    ],
+    "complexity": ["warn", 12],
+    "max-depth": ["warn", 4],
+    "max-nested-callbacks": ["warn", 3],
+    "react/jsx-max-depth": ["warn", { "max": 8 }],
+    "import/max-dependencies": ["warn", { "max": 15, "ignoreTypeImports": true }],
+
+    // ISP — prefer a single options object over long parameter lists
+    "max-params": ["warn", 3],
+
+    // DIP — layers depend inwards only, never in cycles
+    "import/no-cycle": "error",
+    "import/no-self-import": "error",
+    "no-restricted-imports": [
+      "error",
+      {
+        "paths": [
+          { "name": "axios", "message": "Use the HTTP client from @/shared/api." },
+          { "name": "socket.io-client", "message": "Use the realtime client from @/shared/api." }
+        ],
+        "patterns": [
+          { "group": ["msw", "msw/**", "@mswjs/**"], "message": "MSW belongs to src/mocks only." },
+          {
+            "group": ["@/mocks", "@/mocks/**"],
+            "message": "Only the composition root (src/app) may load mocks."
+          },
+          {
+            "group": ["@/features/*/**"],
+            "message": "Import a feature through its public index (@/features/<name>)."
+          }
+        ]
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/domain/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              {
+                "name": "react",
+                "message": "Domain is framework-free: pure types and rules only."
+              },
+              { "name": "axios", "message": "Domain must not know about transport." },
+              { "name": "socket.io-client", "message": "Domain must not know about transport." }
+            ],
+            "patterns": [
+              {
+                "group": ["react-*", "react-*/**", "@tanstack/**", "msw", "msw/**", "@mswjs/**"],
+                "message": "Domain is framework-free."
+              },
+              {
+                "group": ["@/shared/**", "@/features/**", "@/routes/**", "@/app/**", "@/mocks/**"],
+                "message": "Domain is the innermost layer."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/shared/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              { "name": "axios", "message": "Only @/shared/api may use axios." },
+              {
+                "name": "socket.io-client",
+                "message": "Only @/shared/api may use socket.io-client."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["msw", "msw/**", "@mswjs/**"],
+                "message": "MSW belongs to src/mocks only."
+              },
+              {
+                "group": ["@/features/**", "@/routes/**", "@/app/**", "@/mocks/**"],
+                "message": "Shared must not depend on upper layers."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      // The only place allowed to touch transport libraries
+      "files": ["src/shared/api/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["msw", "msw/**", "@mswjs/**"],
+                "message": "MSW belongs to src/mocks only."
+              },
+              {
+                "group": ["@/features/**", "@/routes/**", "@/app/**", "@/mocks/**"],
+                "message": "Shared must not depend on upper layers."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/shared/ui/**"],
+      "rules": {
+        "max-lines": "off",
+        "max-lines-per-function": "off",
+        "react/only-export-components": "off"
+      }
+    },
+    {
+      "files": ["src/features/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              { "name": "axios", "message": "Use the HTTP client from @/shared/api." },
+              {
+                "name": "socket.io-client",
+                "message": "Use the realtime client from @/shared/api."
+              }
+            ],
+            "patterns": [
+              {
+                "group": ["msw", "msw/**", "@mswjs/**"],
+                "message": "MSW belongs to src/mocks only."
+              },
+              {
+                "group": ["@/routes/**", "@/app/**", "@/mocks/**"],
+                "message": "Features must not depend on routes, app or mocks."
+              },
+              {
+                "group": ["@/features/*/**"],
+                "message": "Import another feature through its public index (@/features/<name>)."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/mocks/**"],
+      "rules": {
+        "max-lines": "off",
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features/**", "@/routes/**", "@/app/**", "@/shared/ui/**"],
+                "message": "Mocks reuse domain contracts only, never UI or app code."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/app/**", "src/main.tsx"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["msw", "msw/**", "@mswjs/**"],
+                "message": "Load mocks through @/mocks, not MSW directly."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["e2e/**", "*.config.ts", "*.config.js", "lighthouserc.cjs"],
+      "rules": {
+        "no-restricted-imports": "off",
+        "max-lines-per-function": "off",
+        "max-nested-callbacks": "off"
+      }
+    }
+  ]
+}

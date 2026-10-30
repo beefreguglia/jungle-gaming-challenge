@@ -1,0 +1,21 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "semi": false,
+  "singleQuote": true,
+  "trailingComma": "all",
+  "printWidth": 100,
+  "sortImports": true,
+  "sortPackageJson": true,
+  "sortTailwindcss": {
+    "stylesheet": "./src/index.css",
+    "functions": ["cn", "cva"]
+  },
+  "ignorePatterns": [
+    "dist",
+    "reports",
+    "test-results",
+    "pnpm-lock.yaml",
+    "public/mockServiceWorker.js",
+    "src/routeTree.gen.ts"
+  ]
+}

@@ -1,0 +1,20 @@
+# https://lefthook.dev/configuration/
+pre-commit:
+  parallel: true
+  jobs:
+    - name: format
+      glob: '*.{js,jsx,ts,tsx,cjs,mjs,json,jsonc,css,md,yml,yaml,html}'
+      run: pnpm exec oxfmt --no-error-on-unmatched-pattern {staged_files}
+      stage_fixed: true
+    - name: lint
+      glob: '*.{js,jsx,ts,tsx,cjs,mjs}'
+      run: pnpm exec oxlint --fix {staged_files}
+      stage_fixed: true
+    - name: typecheck
+      glob: '*.{ts,tsx}'
+      run: pnpm typecheck
+
+commit-msg:
+  jobs:
+    - name: commitlint
+      run: pnpm exec commitlint --edit {1}
