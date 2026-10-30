@@ -80,3 +80,92 @@ Dentro de uma mesma feature, use imports relativos; entre features, só `@/featu
 | `pnpm typecheck`                    | TypeScript estrito                                    |
 
 O `lefthook` roda formatação, lint e typecheck no `pre-commit` e o `commitlint` (Conventional Commits) no `commit-msg`.
+
+## Contratos REST
+
+Os contratos ficam em `src/domain` como schemas zod. As features usam esses schemas para validar respostas (`schema` no cliente HTTP) e formulários. O MSW usa os mesmos schemas para validar requisições e montar respostas. Os caminhos ficam em `API_PATHS` (`src/domain/api-contract.ts`), compartilhados entre os dois lados.
+
+Convenções:
+
+- Valores em ETH trafegam como **string decimal** (`"1.19"`, até 18 casas), e todo cálculo passa por `decimal.js` (`money.ts`). Quantidades são inteiras.
+- Datas em ISO 8601 (UTC).
+- Autenticação por `Authorization: Bearer <token>`. O token é opaco para o cliente.
+- O carrinho do visitante é identificado por `X-Cart-Id`.
+- Recursos que mudam em tempo real (NFT, pedido) carregam `version`, um número monotônico.
+
+| Recurso   | Método e caminho                 | Entrada                                      | Resposta                          | Erros relevantes                                                     |
+| --------- | -------------------------------- | -------------------------------------------- | --------------------------------- | -------------------------------------------------------------------- |
+| Sessão    | `POST /auth/sign-up`             | `signUpInputSchema`                          | `201 Session`                     | 409 `email_taken` / `username_taken`, 422                            |
+|           | `POST /auth/sign-in`             | `signInInputSchema`                          | `Session`                         | 401 `invalid_credentials`                                            |
+|           | `GET /session`                   | —                                            | `CurrentSession`                  | 401 `session_expired` / `unauthenticated`                            |
+|           | `DELETE /session`                | —                                            | `204`                             | —                                                                    |
+| NFTs      | `GET /nfts`                      | `NftListParams` na query string              | `NftListResponse` (+ facetas)     | 422                                                                  |
+|           | `GET /nfts/:id`                  | —                                            | `NftDetail`                       | 404                                                                  |
+|           | `GET /nfts/:id/related`          | —                                            | `Nft[]`                           | 404                                                                  |
+| Favoritos | `GET /favorites`                 | —                                            | `Favorites`                       | 401                                                                  |
+|           | `PUT` / `DELETE /favorites/:id`  | —                                            | `Favorites`                       | 401, 404                                                             |
+| Carrinho  | `GET /cart`                      | —                                            | `Cart`                            | —                                                                    |
+|           | `POST /cart/items`               | `addCartItemInputSchema`                     | `Cart`                            | 409 `edition_unavailable` / `quantity_exceeded`                      |
+|           | `PATCH /cart/items/:lineId`      | `updateCartItemInputSchema`                  | `Cart`                            | 404, 409 `quantity_exceeded`                                         |
+|           | `DELETE /cart/items/:lineId`     | —                                            | `Cart`                            | 404                                                                  |
+|           | `PUT` / `DELETE /cart/coupon`    | `applyCouponInputSchema`                     | `Cart`                            | 422 `coupon_invalid` / `coupon_expired`                              |
+|           | `POST /cart/merge`               | `X-Cart-Id` do visitante                     | `Cart`                            | 401                                                                  |
+| Cotação   | `POST /quotes`                   | `createQuoteInputSchema` (rede)              | `Quote`                           | 409 `cart_empty` / `edition_unavailable`, 422 `coupon_expired`       |
+| Carteira  | `POST /wallet-connections`       | `walletConnectionInputSchema`                | `WalletConnection`                | 403 `wallet_rejected`                                                |
+|           | `DELETE /wallet-connections/:id` | —                                            | `204`                             | —                                                                    |
+| Pedidos   | `POST /orders`                   | `createOrderInputSchema` + `Idempotency-Key` | `201 Order` (ou `200` ao repetir) | 409 `quote_outdated` / `quote_expired` / `idempotency_conflict`, 422 |
+|           | `GET /orders/:id`                | —                                            | `Order`                           | 401, 404                                                             |
+| Perfil    | `GET` / `PATCH /profile`         | `profileInputSchema`                         | `Profile`                         | 409 `email_taken` / `username_taken`, 422                            |
+|           | `PUT` / `DELETE /profile/avatar` | `multipart/form-data` (`avatar`)             | `Profile`                         | 422 (tipo ou tamanho)                                                |
+|           | `PUT /profile/password`          | `changePasswordInputSchema`                  | `204`                             | 422 `wrong_password`                                                 |
+| Carteiras | `GET /wallets`                   | —                                            | `Wallets`                         | 401                                                                  |
+|           | `PUT /wallets/primary`           | `walletInputSchema`                          | `Wallet`                          | 422                                                                  |
+|           | `PUT /wallets/secondary`         | `secondaryWalletInputSchema`                 | `Wallet`                          | 409 (sem principal), 422                                             |
+
+Todas as rotas privadas podem responder 401 (`session_expired`). Qualquer rota pode responder 5xx (`service_unavailable`), seja em falha transitória ou em cenário de mock.
+
+### Erros
+
+Todo erro segue o envelope `{ error: { code, message, fields? } }` (`apiErrorBodySchema`):
+
+- O **status** HTTP define a categoria (`ApiErrorKind`), e é por ela que o retry e a sessão decidem o que fazer.
+- O **code** (`API_ERROR_CODES`) diz à UI exatamente o que aconteceu.
+- O **fields** mapeia `campo → mensagem` e alimenta o `setError` dos formulários.
+
+| Status          | Categoria             | Retry |
+| --------------- | --------------------- | :---: |
+| 400 / 422       | `validation`          |  não  |
+| 401             | `unauthorized`        |  não  |
+| 403             | `forbidden`           |  não  |
+| 404             | `not_found`           |  não  |
+| 409             | `conflict`            |  não  |
+| 408 / 429 / 5xx | `transient`           |  sim  |
+| sem resposta    | `network` / `timeout` |  sim  |
+
+### Cotação e pedido
+
+1. O carrinho guarda itens e cupom. Os preços de cada linha são os **atuais** da edição.
+2. `POST /quotes` congela um snapshot com preço: subtotal, desconto, taxa de rede, total e `expiresAt`.
+3. O checkout envia `quoteId` com uma `Idempotency-Key` gerada por tentativa de compra.
+   - Se preço, estoque ou cupom mudaram desde a cotação, a resposta é 409 `quote_outdated`. O cliente pede uma nova cotação, mostra as diferenças (`diffQuotes`) e exige nova confirmação.
+   - A mesma chave com o mesmo corpo devolve o **mesmo** pedido, o que cobre clique duplo e timeout. A mesma chave com outro corpo (comparação por `orderRequestFingerprint`) dá 409 `idempotency_conflict`.
+4. O pedido nasce `pending` e termina em `confirmed` ou `refused`, que são estados terminais (`canTransition`). O recibo é o próprio pedido: as linhas e os totais são uma cópia da cotação, então mudanças posteriores no catálogo não alteram o recibo.
+
+## Eventos Socket.IO
+
+Envelope comum (`src/domain/events.ts`):
+
+```ts
+{ id, type, resource: { type, id }, version, occurredAt, userId: string | null, data }
+```
+
+| Evento          | `userId` | `data`                                                           | Efeito no cliente                                          |
+| --------------- | -------- | ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| `nft.updated`   | `null`   | `price`, `compareAtPrice?`, `editions[{ id, price, available }]` | Catálogo, detalhe e linhas do carrinho (`applyNftUpdate*`) |
+| `order.updated` | dono     | `status`, `transaction`, `refusalReason`, `updatedAt`            | Estado do pedido (`shouldApplyOrderUpdate`)                |
+
+Regras de aplicação:
+
+- **Duplicatas:** descartadas pelo `id` (`createEventDeduper`).
+- **Eventos antigos:** descartados pela `version` (`isNewerVersion`). Um pedido terminal nunca regride.
+- **Isolamento:** eventos com `userId` diferente do usuário da sessão atual são ignorados (`isEventForUser`).
