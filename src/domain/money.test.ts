@@ -63,24 +63,24 @@ describe('arithmetic', () => {
 })
 
 describe('formatEth', () => {
-  it('uses pt-BR separators and the unit', () => {
-    expect(formatEth('12.3')).toBe('12,30 ETH')
-    expect(formatEth('1234567.5')).toBe('1.234.567,50 ETH')
+  it('uses a decimal point, thin-space thousands and the unit, like the Figma', () => {
+    expect(formatEth('12.3')).toBe('12.30 ETH')
+    expect(formatEth('1234567.5')).toBe('1\u2009234\u2009567.50 ETH')
   })
 
   it('trims extra zeros but keeps the minimum decimals', () => {
-    expect(formatEth('0.02')).toBe('0,02 ETH')
-    expect(formatEth('0.1234')).toBe('0,1234 ETH')
+    expect(formatEth('0.02')).toBe('0.02 ETH')
+    expect(formatEth('0.1234')).toBe('0.1234 ETH')
     expect(formatEth('5', { minDecimals: 0 })).toBe('5 ETH')
   })
 
   it('rounds half up at the display precision', () => {
-    expect(formatEth('0.12345')).toBe('0,1235 ETH')
-    expect(formatEth('0.00001')).toBe('0,00 ETH')
+    expect(formatEth('0.12345')).toBe('0.1235 ETH')
+    expect(formatEth('0.00001')).toBe('0.00 ETH')
   })
 
   it('can omit the unit', () => {
-    expect(formatEth('0.5', { withUnit: false })).toBe('0,50')
+    expect(formatEth('0.5', { withUnit: false })).toBe('0.50')
   })
 })
 

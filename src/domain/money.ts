@@ -68,7 +68,11 @@ interface FormatEthOptions {
   withUnit?: boolean
 }
 
-/** Formats for display in pt-BR ("1234.5" → "1.234,50 ETH"). Never use the result in math. */
+/**
+ * Formats for display the way the Figma does ("1.19 ETH", "26.846 ETH"): decimal point, the
+ * crypto convention, and thin-space thousands so no separator can be read as a decimal.
+ * Never use the result in math.
+ */
 export function formatEth(
   value: Eth,
   { maxDecimals = 4, minDecimals = 2, withUnit = true }: FormatEthOptions = {},
@@ -77,8 +81,8 @@ export function formatEth(
   const [integer = '0', fraction = ''] = fixed.split('.')
 
   const trimmedFraction = fraction.replace(/0+$/, '').padEnd(minDecimals, '0')
-  const groupedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-  const number = trimmedFraction ? `${groupedInteger},${trimmedFraction}` : groupedInteger
+  const groupedInteger = integer.replace(/\B(?=(\d{3})+(?!\d))/g, '\u2009')
+  const number = trimmedFraction ? `${groupedInteger}.${trimmedFraction}` : groupedInteger
 
   return withUnit ? `${number} ETH` : number
 }
