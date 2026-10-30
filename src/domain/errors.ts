@@ -13,6 +13,34 @@ export const apiErrorBodySchema = z.object({
 export type ApiErrorBody = z.infer<typeof apiErrorBodySchema>
 
 /**
+ * Business error codes carried in `error.code`. The HTTP status picks the category
+ * (ApiErrorKind); the code tells the UI exactly what happened inside it.
+ */
+export const API_ERROR_CODES = {
+  validation: 'validation_failed',
+  invalidCredentials: 'invalid_credentials',
+  sessionExpired: 'session_expired',
+  unauthenticated: 'unauthenticated',
+  forbidden: 'forbidden',
+  notFound: 'not_found',
+  emailTaken: 'email_taken',
+  usernameTaken: 'username_taken',
+  wrongPassword: 'wrong_password',
+  couponInvalid: 'coupon_invalid',
+  couponExpired: 'coupon_expired',
+  editionUnavailable: 'edition_unavailable',
+  quantityExceeded: 'quantity_exceeded',
+  quoteOutdated: 'quote_outdated',
+  quoteExpired: 'quote_expired',
+  cartEmpty: 'cart_empty',
+  idempotencyConflict: 'idempotency_conflict',
+  walletRejected: 'wallet_rejected',
+  transient: 'service_unavailable',
+} as const
+
+export type ApiErrorCode = (typeof API_ERROR_CODES)[keyof typeof API_ERROR_CODES]
+
+/**
  * Transport-agnostic error categories. UI, retry and session logic branch on these,
  * never on raw HTTP status codes.
  */
