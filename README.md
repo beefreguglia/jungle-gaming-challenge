@@ -12,36 +12,36 @@ O Figma define a identidade visual e a composição das telas. Este enunciado de
 
 ## 2. Stack obrigatória
 
-| Responsabilidade | Tecnologia |
-| --- | --- |
-| Interface | React |
-| Linguagem | TypeScript |
-| Roteamento | TanStack Router |
-| Estado remoto | TanStack Query |
-| Cliente HTTP | Axios |
-| Integração de dados | REST APIs |
-| Tempo real | Socket.IO |
-| Estilização | Tailwind CSS |
-| Componentes | shadcn/ui |
-| Mocking | MSW |
-| Testes E2E e regressão visual | Playwright |
-| Auditoria de performance e qualidade | Lighthouse |
+| Responsabilidade                     | Tecnologia      |
+| ------------------------------------ | --------------- |
+| Interface                            | React           |
+| Linguagem                            | TypeScript      |
+| Roteamento                           | TanStack Router |
+| Estado remoto                        | TanStack Query  |
+| Cliente HTTP                         | Axios           |
+| Integração de dados                  | REST APIs       |
+| Tempo real                           | Socket.IO       |
+| Estilização                          | Tailwind CSS    |
+| Componentes                          | shadcn/ui       |
+| Mocking                              | MSW             |
+| Testes E2E e regressão visual        | Playwright      |
+| Auditoria de performance e qualidade | Lighthouse      |
 
 As tecnologias devem participar efetivamente da solução. A ferramenta de build, a organização do projeto e as bibliotecas complementares ficam a critério do candidato.
 
 ## 3. Telas e fluxos
 
-| Tela | Funcionalidades obrigatórias |
-| --- | --- |
-| Início | Destaques, catálogo, busca, filtros, ordenação e navegação para o NFT |
-| Detalhes do NFT | Galeria, informações, edição, quantidade, favoritos e compra |
-| Carrinho de NFTs | Edição de quantidades, remoção, cupom e resumo de valores |
-| Pagamento | Dados do colecionador, seleção de carteira e rede, revisão e envio do pedido |
-| Confirmação de pedido | Resultado, identificação da transação, itens, taxas e total |
-| Login | Autenticação, validação e retorno ao fluxo anterior |
-| Cadastro | Criação de conta, validação e tratamento de conflito |
-| Perfil do colecionador | Edição dos dados, avatar e alteração de senha |
-| Carteiras | Cadastro e edição de carteiras principal e secundária |
+| Tela                   | Funcionalidades obrigatórias                                                 |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| Início                 | Destaques, catálogo, busca, filtros, ordenação e navegação para o NFT        |
+| Detalhes do NFT        | Galeria, informações, edição, quantidade, favoritos e compra                 |
+| Carrinho de NFTs       | Edição de quantidades, remoção, cupom e resumo de valores                    |
+| Pagamento              | Dados do colecionador, seleção de carteira e rede, revisão e envio do pedido |
+| Confirmação de pedido  | Resultado, identificação da transação, itens, taxas e total                  |
+| Login                  | Autenticação, validação e retorno ao fluxo anterior                          |
+| Cadastro               | Criação de conta, validação e tratamento de conflito                         |
+| Perfil do colecionador | Edição dos dados, avatar e alteração de senha                                |
+| Carteiras              | Cadastro e edição de carteiras principal e secundária                        |
 
 Implemente os frames desktop e mobile disponíveis. Perfil, carteiras e confirmação também devem funcionar em mobile, mesmo sem um frame específico.
 
@@ -105,16 +105,16 @@ Aplique atualização otimista em pelo menos uma interação, com rollback em ca
 
 Defina e documente os contratos utilizados. Os recursos mínimos são:
 
-| Recurso | Operações |
-| --- | --- |
-| Sessão e conta | Cadastro, login, consulta da sessão, logout e expiração |
-| NFTs | Listagem com busca/filtros/ordenação/paginação e detalhe por identificador |
-| Favoritos | Consulta, inclusão e remoção |
-| Carrinho | Consulta, inclusão, alteração e remoção de itens |
-| Cotação | Validação de cupom, disponibilidade, descontos, taxas e total |
-| Pedidos | Criação idempotente e consulta do estado e recibo |
-| Perfil | Consulta, atualização de dados/avatar e alteração de senha |
-| Carteiras | Consulta, cadastro e atualização |
+| Recurso        | Operações                                                                  |
+| -------------- | -------------------------------------------------------------------------- |
+| Sessão e conta | Cadastro, login, consulta da sessão, logout e expiração                    |
+| NFTs           | Listagem com busca/filtros/ordenação/paginação e detalhe por identificador |
+| Favoritos      | Consulta, inclusão e remoção                                               |
+| Carrinho       | Consulta, inclusão, alteração e remoção de itens                           |
+| Cotação        | Validação de cupom, disponibilidade, descontos, taxas e total              |
+| Pedidos        | Criação idempotente e consulta do estado e recibo                          |
+| Perfil         | Consulta, atualização de dados/avatar e alteração de senha                 |
+| Carteiras      | Consulta, cadastro e atualização                                           |
 
 As respostas devem representar erros de validação, sessão inválida, falta de permissão, recurso inexistente, conflito de disponibilidade e falha transitória.
 
@@ -152,10 +152,10 @@ A camada de mocks deve ser ativada por configuração e estar disponível no bui
 
 Implemente, no mínimo, os seguintes eventos:
 
-| Evento | Comportamento esperado |
-| --- | --- |
-| `nft.updated` | Atualizar preço e disponibilidade no catálogo, detalhe e carrinho |
-| `order.updated` | Atualizar o estado do pedido e apresentar confirmação ou recusa |
+| Evento          | Comportamento esperado                                            |
+| --------------- | ----------------------------------------------------------------- |
+| `nft.updated`   | Atualizar preço e disponibilidade no catálogo, detalhe e carrinho |
+| `order.updated` | Atualizar o estado do pedido e apresentar confirmação ou recusa   |
 
 Os eventos devem carregar identidade estável, recurso afetado e versão. O cliente deve tolerar duplicatas e eventos antigos, sem regredir um estado mais recente nem reaplicar efeitos.
 
@@ -217,12 +217,12 @@ As verificações devem observar a interface e os resultados das operações. Os
 
 Audite início e detalhe do NFT com Lighthouse em perfis mobile e desktop, usando build otimizado e o cenário padrão dos mocks.
 
-| Categoria | Meta |
-| --- | ---: |
-| Performance | ≥ 90 |
-| Accessibility | ≥ 95 |
+| Categoria      | Meta |
+| -------------- | ---: |
+| Performance    | ≥ 90 |
+| Accessibility  | ≥ 95 |
 | Best Practices | ≥ 95 |
-| SEO | ≥ 90 |
+| SEO            | ≥ 90 |
 
 Execute três medições por página e perfil e reporte a mediana de cada categoria. Versione a configuração da auditoria e entregue relatórios HTML/JSON, versões das ferramentas, ambiente e condições de execução.
 
@@ -230,18 +230,18 @@ Registre LCP, CLS e TBT. Justifique resultados abaixo das metas e identifique as
 
 ## 11. Critérios de avaliação
 
-| Critério | Pontos | Evidência esperada |
-| --- | ---: | --- |
-| Fidelidade visual e responsividade | 20 | Aderência ao Figma e consistência entre tamanhos de tela |
-| Fluxos e experiência de uso | 20 | Compra e conta completas, validações e recuperação de erros |
-| Integração e estado | 15 | Router, Query, Axios, contratos e cache coerentes |
-| Tempo real | 10 | Eventos, reconexão, ordenação e sincronização com REST |
-| Mocking | 10 | MSW, cenários determinísticos, persistência e reset |
-| Testes | 10 | Cobertura dos fluxos e falhas com Playwright |
-| Acessibilidade | 5 | Operação por teclado, semântica, foco e feedback |
-| Performance | 5 | Resultados e análise das auditorias Lighthouse |
-| Arquitetura e documentação | 5 | Tipagem, responsabilidades e execução reproduzível |
-| **Total** | **100** | |
+| Critério                           |  Pontos | Evidência esperada                                          |
+| ---------------------------------- | ------: | ----------------------------------------------------------- |
+| Fidelidade visual e responsividade |      20 | Aderência ao Figma e consistência entre tamanhos de tela    |
+| Fluxos e experiência de uso        |      20 | Compra e conta completas, validações e recuperação de erros |
+| Integração e estado                |      15 | Router, Query, Axios, contratos e cache coerentes           |
+| Tempo real                         |      10 | Eventos, reconexão, ordenação e sincronização com REST      |
+| Mocking                            |      10 | MSW, cenários determinísticos, persistência e reset         |
+| Testes                             |      10 | Cobertura dos fluxos e falhas com Playwright                |
+| Acessibilidade                     |       5 | Operação por teclado, semântica, foco e feedback            |
+| Performance                        |       5 | Resultados e análise das auditorias Lighthouse              |
+| Arquitetura e documentação         |       5 | Tipagem, responsabilidades e execução reproduzível          |
+| **Total**                          | **100** |                                                             |
 
 São eliminatórios: ausência de uso efetivo da stack obrigatória, fluxos principais apenas visuais, compra confirmada sem resposta da simulação, exposição de dados entre usuários, eventos simulados diretamente na UI ou ausência de testes E2E executáveis.
 
