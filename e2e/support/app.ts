@@ -4,6 +4,11 @@ import { expect, type Page } from '@playwright/test'
 interface MockControl {
   expireSessions(): void
   realtimeUsers(): (string | null)[]
+  setScenario(name: string): void
+  updateEdition(
+    target: { nftId: string; editionId: string },
+    patch: { price?: string; available?: number },
+  ): void
 }
 
 type MockWindow = { __kurioMock?: MockControl }
@@ -32,6 +37,20 @@ export function mock(page: Page) {
       page.evaluate(() => (globalThis as MockWindow).__kurioMock?.expireSessions()),
     realtimeUsers: () =>
       page.evaluate(() => (globalThis as MockWindow).__kurioMock?.realtimeUsers() ?? []),
+    setScenario: (name: string) =>
+      page.evaluate(
+        (scenario) => (globalThis as MockWindow).__kurioMock?.setScenario(scenario),
+        name,
+      ),
+    // Changes price/stock in the mock database, which emits `nft.updated` over Socket.IO
+    updateEdition: (
+      target: { nftId: string; editionId: string },
+      patch: { price?: string; available?: number },
+    ) =>
+      page.evaluate(([t, p]) => (globalThis as MockWindow).__kurioMock?.updateEdition(t, p), [
+        target,
+        patch,
+      ] as const),
   }
 }
 
