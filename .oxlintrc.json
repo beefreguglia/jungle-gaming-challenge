@@ -123,6 +123,13 @@
       }
     },
     {
+      // File routes export `Route` next to their component; the router plugin handles HMR
+      "files": ["src/routes/**"],
+      "rules": {
+        "react/only-export-components": "off"
+      }
+    },
+    {
       "files": ["src/shared/ui/**"],
       "rules": {
         "max-lines": "off",
