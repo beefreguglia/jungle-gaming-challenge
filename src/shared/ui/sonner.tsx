@@ -18,7 +18,7 @@ function Toaster(props: ToasterProps) {
         success: <CircleCheckIcon className="size-4 text-success" />,
         info: <InfoIcon className="size-4 text-accent-foreground" />,
         warning: <TriangleAlertIcon className="size-4 text-accent-foreground" />,
-        error: <OctagonXIcon className="size-4 text-destructive" />,
+        error: <OctagonXIcon className="size-4 text-error" />,
         loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
       style={

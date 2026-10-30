@@ -12,4 +12,9 @@ describe('cn', () => {
     expect(cn('text-foreground', 'text-accent-foreground')).toBe('text-accent-foreground')
     expect(cn('h-10 px-4', 'h-15')).toBe('px-4 h-15')
   })
+
+  it('treats the exact Figma sizes as font sizes', () => {
+    expect(cn('text-coral', 'text-14')).toBe('text-coral text-14')
+    expect(cn('text-body', 'text-15')).toBe('text-15')
+  })
 })

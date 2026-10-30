@@ -12,6 +12,9 @@
  *   color/foreground #F5F1EB → foreground  color/text-secondary #CFB28C → muted-foreground
  *   color/secondary #B39463 → subtle       color/border #3F2319 → border, input
  *   color/border-soft #55321F → border-soft
+ *   text/coral #EA6B4F → coral, destructive (error text; #ED1B2E is 4.4:1, below AA for small text)
+ *   color/error #ED1B2E → error (borders, icons, fills)   color/success #00A66C → success
+ * text/primary #F7F3EC is visually identical to color/foreground and is served by foreground.
  * Accessibility adjustment: form field borders use #846341 (3.5:1 on the background, WCAG
  * 1.4.11) instead of #3F2319 (1.3:1), which made empty fields nearly invisible.
  */
@@ -35,7 +38,15 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-error: var(--error);
+  --color-coral: var(--coral);
   --color-success: var(--success);
+  --color-primary-light: var(--primary-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-amber: var(--amber);
+  --color-surface-raised: var(--surface-raised);
+  --color-background-elevated: var(--background-elevated);
+  --color-gray-light: var(--gray-light);
   --color-subtle: var(--subtle);
   --color-border: var(--border);
   --color-border-soft: var(--border-soft);
@@ -52,7 +63,12 @@
   --radius-4xl: calc(var(--radius) * 8);
 }
 
-/* Type scale from the Figma text styles (size / line height) */
+/*
+ * Type scale from the Figma text styles. Semantic names are the defaults of each Figma group
+ * (Tiny, Caption, Body, Body Large, Title, Heading, Display); `text-<px>` gives the exact
+ * Figma size with its most frequent line height, to be overridden with `leading-*` when the
+ * style differs (e.g. "14 Regular · lh 24" → `text-14 leading-6`).
+ */
 @theme {
   --text-tiny: 0.625rem;
   --text-tiny--line-height: 1;
@@ -62,12 +78,63 @@
   --text-body--line-height: 1.5714;
   --text-body-lg: 1rem;
   --text-body-lg--line-height: 1.25;
-  --text-title: 1.125rem;
-  --text-title--line-height: 1.3333;
+  --text-title: 1.25rem;
+  --text-title--line-height: 1.4;
   --text-heading: 1.5rem;
   --text-heading--line-height: 1.25;
   --text-display: 2.6875rem;
   --text-display--line-height: 1.6279;
+
+  --text-9: 0.5625rem;
+  --text-9--line-height: normal;
+  --text-10: 0.625rem;
+  --text-10--line-height: normal;
+  --text-11: 0.6875rem;
+  --text-11--line-height: 1rem;
+  --text-12: 0.75rem;
+  --text-12--line-height: 1rem;
+  --text-13: 0.8125rem;
+  --text-13--line-height: 1rem;
+  --text-14: 0.875rem;
+  --text-14--line-height: 1rem;
+  --text-15: 0.9375rem;
+  --text-15--line-height: 1rem;
+  --text-16: 1rem;
+  --text-16--line-height: 1rem;
+  --text-17: 1.0625rem;
+  --text-17--line-height: 1rem;
+  --text-18: 1.125rem;
+  --text-18--line-height: 1rem;
+  --text-19: 1.1875rem;
+  --text-19--line-height: 1.8125rem;
+  --text-20: 1.25rem;
+  --text-20--line-height: 1rem;
+  --text-21: 1.3125rem;
+  --text-21--line-height: 1rem;
+  --text-22: 1.375rem;
+  --text-22--line-height: 1rem;
+  --text-23: 1.4375rem;
+  --text-23--line-height: 1rem;
+  --text-24: 1.5rem;
+  --text-24--line-height: normal;
+  --text-26: 1.625rem;
+  --text-26--line-height: 2rem;
+  --text-28: 1.75rem;
+  --text-28--line-height: normal;
+  --text-32: 2rem;
+  --text-32--line-height: normal;
+  --text-43: 2.6875rem;
+  --text-43--line-height: 4.375rem;
+
+  /* Third-party brand colors from the Figma (logo, sign-in providers, wallets) */
+  --color-brand-orange: #ff641a;
+  --color-facebook: #3b5999;
+  --color-google-blue: #4086f4;
+  --color-google-green: #59c36a;
+  --color-google-yellow: #ffda2d;
+  --color-brand-blue: #4175df;
+  --color-brand-light-blue: #03a9f4;
+  --color-brand-indigo: #283593;
 
   --container-page: 75rem;
 
@@ -101,9 +168,16 @@
   --accent: #38220f;
   --accent-foreground: #e89b55;
   --subtle: #b39463;
-  /* Not in the Figma variables: required-field asterisks and error states */
-  --destructive: #f0806a;
-  --success: #8fc79a;
+  --primary-light: #dd9a5f;
+  --primary-dark: #c47b3e;
+  --amber: #e3a44e;
+  --surface-raised: #2f1d15;
+  --background-elevated: #fbfbfb;
+  --gray-light: #ededed;
+  --coral: #ea6b4f;
+  --destructive: var(--coral);
+  --error: #ed1b2e;
+  --success: #00a66c;
   --border: #3f2319;
   --border-soft: #55321f;
   --input: #846341;
