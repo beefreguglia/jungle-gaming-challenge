@@ -241,3 +241,55 @@ O cliente `socket.io-client` conecta normalmente, e o MSW intercepta o WebSocket
 - **Roteamento da conexão.** O MSW remove o prefixo `/socket.io/` antes de comparar URLs, então o handler escuta a origem (`ws://host/`). Para não interceptar outros WebSockets da mesma origem, como o HMR do Vite, conexões sem o parâmetro `EIO` seguem para o servidor real (`connection.server.connect()`).
 - **Sem namespaces nem rooms.** Tudo trafega no namespace `/`, e o filtro por usuário acontece no hub, pelo `userId` do envelope.
 - **Escopo da aba.** O "servidor" vive na aba. Duas abas abertas têm estados em memória independentes que compartilham o mesmo `localStorage`, então eventos de uma aba não chegam à outra.
+
+## Composição da aplicação
+
+`src/app/services.ts` é a raiz de composição: cria uma única vez o `QueryClient`, o cliente HTTP, o gerenciador de sessão, o cliente Socket.IO e a sincronização de tempo real, e liga essas peças entre si. As features recebem as instâncias pelo contexto do router (`queryClient`, `http`, `session`) e pelo contexto React (`useHttpClient`, `useSessionManager`, `useRealtimeStatus`). Nenhuma feature cria seu próprio cliente.
+
+O cliente HTTP (`shared/api/http-client.ts`) é o único ponto que conhece o Axios:
+
+- Calcula os cabeçalhos a cada requisição, como o token de sessão (e, a partir da fase do carrinho, o `X-Cart-Id`).
+- Serializa arrays como chaves repetidas (`collections=a&collections=b`).
+- Valida a resposta com o schema zod do contrato. Uma divergência vira `ApiError` do tipo `contract`.
+- Normaliza toda falha em `ApiError` e a repassa ao gancho `onError`.
+- Aceita o `AbortSignal` do TanStack Query, então consultas obsoletas são canceladas na rede.
+
+## Sessão
+
+| Situação                     | Comportamento                                                                                                                                                                                      |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Login / cadastro             | Grava `{ token, user, expiresAt }` no `localStorage` (`kurio:session`) e agenda uma revalidação no `expiresAt`.                                                                                    |
+| Refresh                      | A sessão é lida do storage e revalidada com `GET /session` na inicialização.                                                                                                                       |
+| API rejeita o token          | Um 401 `session_expired` / `unauthenticated` em uma requisição **que levava token** encerra a sessão (`isSessionRejection`). Outros 401, como senha errada, são erros de formulário.               |
+| Falha de rede na revalidação | A sessão é mantida; só a API pode encerrá-la.                                                                                                                                                      |
+| Expiração em rota privada    | O guard `_authenticated` roda de novo e redireciona para `/login?redirect=<URL completa>`. Após o login, o usuário volta exatamente para onde estava (`safeRedirect` aceita só caminhos internos). |
+| Expiração em rota pública    | O usuário permanece na página e recebe um toast explicando o que aconteceu.                                                                                                                        |
+| Logout                       | Encerra a sessão localmente na hora; o `DELETE /session` é melhor esforço, com o token antigo explícito.                                                                                           |
+| Outra aba                    | O evento `storage` propaga login e logout entre abas.                                                                                                                                              |
+
+**Isolamento entre usuários.** Toda query com dado privado usa um escopo na chave: `['user', userId, …]` para dados do membro e `['visitor', cartId, …]` para o carrinho do visitante. Qualquer troca de quem usa o app (login, logout, expiração, troca de usuário) cancela e remove esses dois escopos inteiros, além de limpar o cache de mutations, antes de gravar a nova sessão. Como o `userId` faz parte da chave, um dado em cache nunca é servido a outro usuário. Dados públicos, como catálogo e detalhe, são preservados.
+
+Na mesma troca, o cliente Socket.IO reconecta com o novo token, os ids de eventos já vistos são esquecidos e eventos endereçados a outro `userId` são descartados antes de qualquer escrita no cache.
+
+## Cache, retries e sincronização
+
+| Política            | Valor padrão                                                                            | Motivo                                                                      |
+| ------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `staleTime`         | 30 s                                                                                    | Evita refetch a cada navegação; recursos ao vivo são corrigidos por eventos |
+| `gcTime`            | 5 min                                                                                   | Voltar a uma página recente é instantâneo                                   |
+| Retry de queries    | Até 2, com backoff exponencial (até 8 s), **só** para 5xx, 408, 429, rede e timeout     | 4xx é resposta definitiva; repetir só atrasaria o feedback                  |
+| Retry de mutations  | Nunca automático                                                                        | Escritas não são repetidas às cegas; o pedido usa chave de idempotência     |
+| Foco na janela      | Refetch de queries vencidas                                                             | Dados atualizados ao voltar para a aba                                      |
+| Respostas obsoletas | Cada combinação de parâmetros é uma chave própria, e o `AbortSignal` cancela a anterior | Uma resposta antiga nunca sobrescreve a busca atual                         |
+
+As fatias de cada feature ajustam o `staleTime` por recurso, como o carrinho e o pedido pendente, que precisam estar sempre frescos. Esses ajustes ficam documentados junto de cada fatia.
+
+## Reconciliação REST × Socket.IO
+
+1. Cada evento é validado com o schema zod do domínio. Payload malformado é descartado com um aviso.
+2. Duplicatas são descartadas pelo `id` do evento.
+3. Eventos endereçados a outro usuário são descartados.
+4. O evento é entregue aos **aplicadores** registrados pelas features (`src/app/realtime-appliers.ts`). Cada aplicador escreve no cache usando as regras de versão do domínio (`applyNftUpdate`, `shouldApplyOrderUpdate`), então um evento antigo nunca regride um estado mais novo.
+5. **Após cada reconexão**, todas as queries ativas com `meta: { realtime: true }` são reconsultadas via REST, porque eventos emitidos enquanto o socket estava fora se perderam. A primeira conexão não dispara essa reconsulta.
+
+Listeners e subscriptions são liberados por funções de `dispose` devolvidas por cada peça.
