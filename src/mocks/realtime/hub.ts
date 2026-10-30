@@ -28,6 +28,8 @@ export interface RealtimeHub extends RealtimePublisher {
   disconnectAll(): void
   replayLast(): void
   readonly connectedCount: number
+  // User behind each open socket (null = visitor); shows which credentials a client used
+  readonly connectedUserIds: (string | null)[]
 }
 
 interface HubOptions {
@@ -83,6 +85,10 @@ export function createRealtimeHub({ scenario, resolveUserId }: HubOptions): Real
   return {
     get connectedCount() {
       return clients.size
+    },
+
+    get connectedUserIds() {
+      return [...clients].map((client) => client.userId)
     },
 
     attach(connection) {

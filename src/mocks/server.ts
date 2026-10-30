@@ -35,6 +35,8 @@ export interface MockControl {
   ): void
   expireSessions(): void
   disconnectRealtime(): void
+  // User id behind each open Socket.IO connection (null = visitor)
+  realtimeUsers(): (string | null)[]
   replayLastEvent(): void
   settleOrders(): void
 }
@@ -143,6 +145,7 @@ export function createMockServer({
     updateEdition: (target, patch) => void updateEdition(backend, target, patch),
     expireSessions: () => expireAllSessions(backend),
     disconnectRealtime: () => hub.disconnectAll(),
+    realtimeUsers: () => hub.connectedUserIds,
     replayLastEvent: () => hub.replayLast(),
     settleOrders: () => settleDueOrders(backend),
   }
