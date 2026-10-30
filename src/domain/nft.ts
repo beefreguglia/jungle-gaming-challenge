@@ -57,28 +57,71 @@ export const nftCreatorSchema = z.object({
   avatarUrl: z.string().optional(),
 })
 
+export const NFT_RARITIES = ['common', 'rare'] as const
+export const nftRaritySchema = z.enum(NFT_RARITIES)
+export type NftRarity = z.infer<typeof nftRaritySchema>
+
 export const nftSchema = z.object({
   id: z.string(),
+  // On-chain token number shown as "#0042"
+  tokenId: z.string(),
   name: z.string(),
   description: z.string(),
   collection: nftCollectionSchema,
+  // Creator series the piece belongs to ("Kurio Apes"), distinct from the catalog category
+  series: z.string(),
   network: nftNetworkSchema,
   creator: nftCreatorSchema,
+  rarity: nftRaritySchema,
   images: z.array(nftImageSchema).min(1),
   // Lowest price among editions with stock; the catalog card shows and sorts by it
   price: ethSchema,
+  // Previous price shown struck through when the NFT is on sale
+  compareAtPrice: ethSchema.optional(),
   editions: z.array(nftEditionSchema).min(1),
   listedAt: z.iso.datetime(),
   // Bumped on every price/availability change; realtime events carry it too
   version: z.number().int().min(1),
 })
 
+export const nftDetailSchema = nftSchema.extend({
+  // Long-form text for the "Detalhes do NFT" tab, one entry per paragraph
+  story: z.array(z.string()),
+  attributes: z.array(z.string()),
+  rating: z.object({
+    average: z.number().min(0).max(5),
+    count: z.number().int().min(0),
+  }),
+  contract: z.object({
+    address: z.string(),
+    standard: z.enum(['ERC-721', 'ERC-1155', 'SPL']),
+    royaltyPercent: z.number().min(0).max(100),
+  }),
+})
+
 export type NftEdition = z.infer<typeof nftEditionSchema>
 export type NftImage = z.infer<typeof nftImageSchema>
 export type NftCreator = z.infer<typeof nftCreatorSchema>
 export type Nft = z.infer<typeof nftSchema>
+export type NftDetail = z.infer<typeof nftDetailSchema>
 
 export const nftPageSchema = paginatedSchema(nftSchema)
+
+// Facet counts for the catalog sidebar ("Arte digital (33)"), computed over the other filters
+export const nftFacetsSchema = z.object({
+  collections: z.record(nftCollectionSchema, z.number().int().min(0)),
+  networks: z.record(nftNetworkSchema, z.number().int().min(0)),
+  priceRange: z.object({ min: ethSchema, max: ethSchema }),
+})
+
+export type NftFacets = z.infer<typeof nftFacetsSchema>
+
+export const nftListResponseSchema = nftPageSchema.extend({ facets: nftFacetsSchema })
+export type NftListResponse = z.infer<typeof nftListResponseSchema>
+
+export function isOnSale(nft: Nft): boolean {
+  return nft.compareAtPrice !== undefined && compareEth(nft.compareAtPrice, nft.price) > 0
+}
 
 export function isEditionAvailable(edition: NftEdition): boolean {
   return edition.available > 0

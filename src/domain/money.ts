@@ -40,6 +40,16 @@ export function multiplyEth(amount: Eth, quantity: number): Eth {
   return fromDecimal(toDecimal(amount).times(quantity))
 }
 
+/** `percent`% of an amount, rounded down to wei so a discount never exceeds what it promises. */
+export function percentOfEth(amount: Eth, percent: number): Eth {
+  if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+    throw new RangeError(`Percent must be between 0 and 100, got ${percent}`)
+  }
+  return fromDecimal(
+    toDecimal(amount).times(percent).dividedBy(100).toDecimalPlaces(18, Decimal.ROUND_DOWN),
+  )
+}
+
 export function sumEth(values: readonly Eth[]): Eth {
   return fromDecimal(values.reduce((total, value) => total.plus(toDecimal(value)), new D(0)))
 }

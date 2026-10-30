@@ -5,6 +5,7 @@ import {
   defaultEdition,
   defaultNftListParams,
   isInvalidPriceRange,
+  isOnSale,
   isSoldOut,
   type Nft,
   type NftEdition,
@@ -21,11 +22,14 @@ function edition(overrides: Partial<NftEdition> = {}): NftEdition {
 function nft(editions: NftEdition[]): Nft {
   return {
     id: 'n1',
+    tokenId: '0001',
     name: 'Aurora',
     description: 'Generative piece',
     collection: 'generative',
+    series: 'Kurio Apes',
     network: 'ethereum',
     creator: { id: 'c1', name: 'Ana' },
+    rarity: 'common',
     images: [{ url: '/nfts/aurora.webp', alt: 'Aurora' }],
     price: '1',
     editions,
@@ -45,6 +49,14 @@ describe('nftSchema', () => {
 
   it('rejects an edition with more available than supply', () => {
     expect(nftEditionSchema.safeParse(edition({ available: 11 })).success).toBe(false)
+  })
+})
+
+describe('isOnSale', () => {
+  it('requires a previous price above the current one', () => {
+    expect(isOnSale({ ...nft([edition()]), compareAtPrice: '2.29', price: '1.99' })).toBe(true)
+    expect(isOnSale({ ...nft([edition()]), compareAtPrice: '1', price: '1' })).toBe(false)
+    expect(isOnSale(nft([edition()]))).toBe(false)
   })
 })
 
