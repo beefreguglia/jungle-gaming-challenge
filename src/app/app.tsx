@@ -3,11 +3,13 @@ import { RouterProvider } from '@tanstack/react-router'
 import { lazy, Suspense } from 'react'
 import { Toaster } from 'sonner'
 
-import { createHttpClient } from '@/shared/api'
+import { SessionContext } from '@/features/session'
+import { HttpClientContext, RealtimeClientContext } from '@/shared/api'
 import { env } from '@/shared/config/env'
 
-import { createQueryClient } from './query-client'
 import { createAppRouter } from './router'
+import { createAppServices } from './services'
+import { bindSessionLifecycle } from './session-lifecycle'
 
 const QueryDevtools = env.isDev
   ? lazy(() =>
@@ -15,14 +17,24 @@ const QueryDevtools = env.isDev
     )
   : () => null
 
-const queryClient = createQueryClient()
-const http = createHttpClient({ baseURL: env.apiUrl })
-const router = createAppRouter({ queryClient, http })
+const services = createAppServices()
+const router = createAppRouter({
+  queryClient: services.queryClient,
+  http: services.http,
+  session: services.session,
+})
+bindSessionLifecycle(services, router)
 
 export function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+    <QueryClientProvider client={services.queryClient}>
+      <HttpClientContext value={services.http}>
+        <RealtimeClientContext value={services.realtime}>
+          <SessionContext value={services.session}>
+            <RouterProvider router={router} />
+          </SessionContext>
+        </RealtimeClientContext>
+      </HttpClientContext>
       <Toaster position="bottom-right" />
       <Suspense>
         <QueryDevtools />

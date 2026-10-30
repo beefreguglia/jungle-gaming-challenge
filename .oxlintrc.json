@@ -202,6 +202,15 @@
       }
     },
     {
+      // Integration tests run the app wiring against MSW in Node (msw/node)
+      "files": ["src/**/*.integration.test.ts"],
+      "rules": {
+        "no-restricted-imports": "off",
+        "max-lines-per-function": "off",
+        "max-nested-callbacks": "off"
+      }
+    },
+    {
       "files": ["e2e/**", "*.config.ts", "*.config.js", "lighthouserc.cjs"],
       "rules": {
         "no-restricted-imports": "off",
