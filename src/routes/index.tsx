@@ -15,6 +15,7 @@ import {
   nftListQueryOptions,
   useNftList,
 } from '@/features/catalog'
+import { FavoriteButton } from '@/features/favorites'
 
 import { MintJournal } from './-components/home/mint-journal'
 import { PromoBanners } from './-components/home/promo-banners'
@@ -67,7 +68,18 @@ function HomePage() {
         onChange={onChange}
       />
       <HomeHero />
-      <CatalogSection params={params} onChange={onChange} />
+      <CatalogSection
+        params={params}
+        onChange={onChange}
+        renderCardActions={(nft) => (
+          // z-10: above the name link, which is stretched over the whole card
+          <FavoriteButton
+            nftId={nft.id}
+            nftName={nft.name}
+            className="absolute top-4 right-3 z-10"
+          />
+        )}
+      />
       <PromoBanners />
       <MintJournal />
     </div>
