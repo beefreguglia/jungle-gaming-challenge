@@ -94,7 +94,7 @@ const variants: Record<string, Partial<Scenario> & { description: string }> = {
     failures: [{ methods: ['PUT', 'DELETE'], pathPrefix: '/favorites/', status: 500 }],
   },
   unauthorized: {
-    description: 'Rotas privadas respondem 403',
+    description: 'Perfil responde 403 (acesso não autorizado)',
     failures: [{ methods: ['*'], pathPrefix: '/profile', status: 403 }],
   },
   'session-expires': {
