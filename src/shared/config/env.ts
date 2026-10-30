@@ -7,7 +7,9 @@ const envSchema = z.object({
     .string()
     .optional()
     .transform((value) => value || undefined),
-  VITE_ENABLE_MOCKS: z.stringbool().default(false),
+  // On by default so a clean checkout and the demo deploy work without a .env; set false to
+  // point the app at a real backend
+  VITE_ENABLE_MOCKS: z.stringbool().default(true),
 })
 
 const parsed = envSchema.safeParse(import.meta.env)
