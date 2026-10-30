@@ -56,7 +56,7 @@ const linkClass = 'text-body hover:text-accent-foreground'
 
 function Features() {
   return (
-    <div className="grid gap-8 bg-card px-6 py-8 md:grid-cols-2 lg:grid-cols-4 lg:px-10">
+    <div className="grid grid-cols-1 gap-8 bg-card px-6 py-8 md:grid-cols-2 lg:grid-cols-4 lg:px-10">
       {FEATURES.map((feature) => (
         <div key={feature.letter} className="lg:border-r lg:border-primary/60 lg:pr-6">
           <span
@@ -76,7 +76,7 @@ function Features() {
 
 function ContactBand() {
   return (
-    <div className="grid gap-4 bg-secondary px-6 py-6 text-body sm:grid-cols-2 lg:grid-cols-4 lg:items-center lg:px-10">
+    <div className="grid grid-cols-1 gap-4 bg-secondary px-6 py-6 text-body sm:grid-cols-2 lg:grid-cols-4 lg:items-center lg:px-10">
       <p className="font-bold tracking-[0.12em]">KURIO</p>
       <p>Feito para colecionadores, criadores e cultura</p>
       <a href="mailto:contato@email.com" className={linkClass}>
@@ -91,7 +91,7 @@ function ContactBand() {
 
 function SitemapColumns() {
   return (
-    <div className="grid gap-8 bg-card px-6 py-8 sm:grid-cols-2 lg:grid-cols-4 lg:px-10">
+    <div className="grid grid-cols-1 gap-8 bg-card px-6 py-8 sm:grid-cols-2 lg:grid-cols-4 lg:px-10">
       <nav aria-labelledby="footer-profile">
         <h2 id="footer-profile" className={headingClass}>
           Meu perfil
