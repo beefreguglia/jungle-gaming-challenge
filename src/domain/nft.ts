@@ -135,6 +135,15 @@ export function findEdition(nft: Nft, editionId: string): NftEdition | undefined
   return nft.editions.find((edition) => edition.id === editionId)
 }
 
+/** The NFT's listed price: the cheapest edition with stock, or the cheapest overall if sold out. */
+export function lowestEditionPrice(editions: readonly NftEdition[]): string {
+  const withStock = editions.filter(isEditionAvailable)
+  const pool = withStock.length > 0 ? withStock : editions
+  const [cheapest] = pool.map((edition) => edition.price).toSorted(compareEth)
+  if (cheapest === undefined) throw new RangeError('An NFT needs at least one edition')
+  return cheapest
+}
+
 /** Clamps a requested quantity to what the edition can still sell (0 when sold out). */
 export function clampQuantity(edition: NftEdition, requested: number): number {
   return Math.max(0, Math.min(Math.trunc(requested), edition.available))
