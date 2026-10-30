@@ -40,8 +40,9 @@ export interface SessionManager {
 }
 
 /**
- * Owns the session lifecycle. Every transition that changes *who* is using the app
- * purges private cached data first, so nothing from the previous user survives it.
+ * Owns the session lifecycle. Every change of *who* is using the app purges private
+ * cached data before anything renders for the new user, so nothing from the previous
+ * user survives it.
  */
 export function createSessionManager({
   store,
@@ -67,17 +68,34 @@ export function createSessionManager({
     cancelCheck = schedule(() => void manager.validate(), delay)
   }
 
-  function begin(session: Session): Session {
-    if (store.get()?.user.id !== session.user.id) purgePrivateData()
-    store.set(session)
+  /*
+   * Single place that reacts to *who* is using the app. It observes the store instead of
+   * being called by each transition, so changes made elsewhere (another tab logging in or
+   * out through the `storage` event) purge private data and reschedule the expiry check too.
+   */
+  let currentUserId = store.get()?.user.id ?? null
+  const unsubscribe = store.subscribe(() => {
+    const session = store.get()
+    const userId = session?.user.id ?? null
+    if (userId !== currentUserId) {
+      currentUserId = userId
+      purgePrivateData()
+    }
     scheduleCheck(session)
-    return session
-  }
+  })
 
   const manager: SessionManager = {
     store,
-    signIn: async (input) => begin(await api.signIn(input)),
-    signUp: async (input) => begin(await api.signUp(input)),
+    signIn: async (input) => {
+      const session = await api.signIn(input)
+      store.set(session)
+      return session
+    },
+    signUp: async (input) => {
+      const session = await api.signUp(input)
+      store.set(session)
+      return session
+    },
 
     async validate() {
       const session = store.get()
@@ -87,7 +105,6 @@ export function createSessionManager({
         // A login/logout may have happened while the request was in flight
         if (store.get()?.token !== session.token) return
         store.update(current)
-        scheduleCheck(store.get())
       } catch (error) {
         // Network trouble keeps the session; only the API rejecting the token ends it
         if (isApiError(error) && isSessionRejection(error, { sentAuthorization: true })) {
@@ -97,17 +114,12 @@ export function createSessionManager({
     },
 
     expire() {
-      if (!store.get()) return
-      cancelCheck()
-      purgePrivateData()
-      store.clear('expired')
+      if (store.get()) store.clear('expired')
     },
 
     async logout() {
       const session = store.get()
       if (!session) return
-      cancelCheck()
-      purgePrivateData()
       store.clear('logout')
       // Best effort: the local session is already gone even if the API is unreachable
       await api.signOut(session.token).catch(() => {})
@@ -118,7 +130,10 @@ export function createSessionManager({
       void manager.validate()
     },
 
-    dispose: () => cancelCheck(),
+    dispose() {
+      unsubscribe()
+      cancelCheck()
+    },
   }
   return manager
 }

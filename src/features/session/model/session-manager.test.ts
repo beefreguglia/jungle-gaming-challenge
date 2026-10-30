@@ -116,6 +116,40 @@ describe('session manager', () => {
     expect(store.get()?.user.id).toBe('kai')
   })
 
+  it('purges private cache when another tab logs out (store changed from outside)', async () => {
+    const { manager, store, queryClient } = setup()
+    await manager.signIn({ email: 'nova@kurio.art', password: 'kurio1234' })
+    queryClient.setQueryData(userKey('nova', 'orders'), [{ id: 'order_1' }])
+
+    // What the `storage` event listener does when another tab removes the session
+    store.clear('logout')
+
+    expect(queryClient.getQueryData(userKey('nova', 'orders'))).toBeUndefined()
+  })
+
+  it('schedules the expiry check for a session that another tab created', () => {
+    const { store, scheduled } = setup()
+    store.set(session('kai', { expiresAt: '2026-10-30T13:00:00.000Z' }))
+    expect(scheduled.at(-1)?.delay).toBe(60 * 60 * 1000)
+  })
+
+  it('keeps cached data when the same user refreshes the session', async () => {
+    const { manager, queryClient } = setup()
+    await manager.signIn({ email: 'nova@kurio.art', password: 'kurio1234' })
+    queryClient.setQueryData(userKey('nova', 'profile'), { displayName: 'Nova' })
+    await manager.validate()
+    expect(queryClient.getQueryData(userKey('nova', 'profile'))).toEqual({ displayName: 'Nova' })
+  })
+
+  it('stops reacting to the store after dispose', async () => {
+    const { manager, store, queryClient } = setup()
+    await manager.signIn({ email: 'nova@kurio.art', password: 'kurio1234' })
+    queryClient.setQueryData(userKey('nova', 'orders'), [])
+    manager.dispose()
+    store.clear('logout')
+    expect(queryClient.getQueryData(userKey('nova', 'orders'))).toEqual([])
+  })
+
   it('logs out locally even if the API is unreachable, sending the old token', async () => {
     const signOut = vi.fn(async () => Promise.reject(new Error('offline')))
     const { manager, store } = setup({ signOut })
