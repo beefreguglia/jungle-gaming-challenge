@@ -169,3 +169,75 @@ Regras de aplicação:
 - **Duplicatas:** descartadas pelo `id` (`createEventDeduper`).
 - **Eventos antigos:** descartados pela `version` (`isNewerVersion`). Um pedido terminal nunca regride.
 - **Isolamento:** eventos com `userId` diferente do usuário da sessão atual são ignorados (`isEventForUser`).
+
+## Backend simulado (MSW)
+
+O MSW substitui a **rede**, não o código: o app faz requisições Axios e conexões Socket.IO reais, e o MSW responde. Nenhum componente, hook ou cliente sabe que está falando com mocks. A camada é ligada por `VITE_ENABLE_MOCKS=true`, inclusive no build de demonstração.
+
+```
+src/mocks/
+├── browser.ts      Inicia o worker, aplica ?scenario= / ?mock-reset e expõe window.__kurioMock
+├── server.ts       Compõe banco, hub de tempo real, handlers e a API de controle
+├── scenarios.ts    Cenários como configuração (latência, falhas, sessão, pagamento…)
+├── db/             "Banco" em memória persistido no localStorage, com reset para a semente
+├── fixtures/       60 NFTs determinísticos (os 9 do Figma + gerados), 2 usuários, cupons
+├── services/       Regras do servidor, sem MSW (testadas no Node com Vitest)
+├── handlers/       Rotas REST finas: validam a entrada com os schemas do domínio e chamam serviços
+├── realtime/hub.ts Envia eventos Socket.IO a partir das mesmas mutações que alteram o banco
+└── lib/route.ts    Wrapper das rotas: latência, falhas injetadas e envelope de erro
+```
+
+**Consistência entre REST e eventos.** Toda mudança de preço ou estoque passa por `updateEdition`, que incrementa a versão do NFT, grava no banco e publica `nft.updated`. A liquidação do pedido faz o mesmo com `order.updated`. Assim, uma leitura REST feita depois de um evento nunca mostra um estado anterior a ele.
+
+**Persistência e reset.** O estado fica salvo em `localStorage` (`kurio:mock-db`) e sobrevive a refresh. Quando o formato muda, o dado antigo é descartado. `?mock-reset` ou `__kurioMock.reset()` restauram a semente por completo. Pedidos `pending` interrompidos por um refresh são liquidados ou reagendados na inicialização.
+
+**Credenciais fictícias.** `nova@kurio.art` e `kai@kurio.art`, ambas com a senha `kurio1234`. As senhas ficam armazenadas só como hash SHA-256 com salt.
+
+**Cupons.** `GENESIS10` (10%) e `KURIO05` (0,05 ETH) são válidos. `VERAO25` está expirado. Qualquer outro código é inválido.
+
+### Cenários
+
+Para selecionar, use `?scenario=<nome>` (fica salvo) ou `window.__kurioMock.setScenario(nome)`.
+
+| Cenário            | Efeito                                                                     |
+| ------------------ | -------------------------------------------------------------------------- |
+| `default`          | Latência de 150 a 350 ms; pagamento confirma em 2,5 s                      |
+| `instant`          | Sem latência; pagamento em 300 ms (testes)                                 |
+| `slow`             | 2 a 3 s por requisição (skeletons)                                         |
+| `variable-latency` | 100 ms a 1,5 s, em sequência pseudoaleatória com semente fixa              |
+| `out-of-order`     | Respostas de `GET /nfts` alternam entre lenta e rápida                     |
+| `empty`            | Catálogo sem resultados                                                    |
+| `offline`          | Toda requisição falha na rede; o socket é recusado                         |
+| `server-error`     | `GET /nfts*` responde 500                                                  |
+| `flaky`            | As 2 primeiras consultas ao catálogo dão 503, depois recupera              |
+| `favorite-fails`   | Incluir ou remover favorito dá 500 (testa o rollback otimista)             |
+| `unauthorized`     | `/profile*` responde 403                                                   |
+| `session-expires`  | Sessões novas expiram em 30 s                                              |
+| `price-change`     | 4 s após a cotação, o preço do 1º item do carrinho sobe 0,1 ETH            |
+| `sold-out`         | 4 s após a cotação, o 1º item do carrinho esgota                           |
+| `order-timeout`    | O pedido é criado, mas a resposta leva 20 s (recuperação por idempotência) |
+| `payment-refused`  | O pedido termina `refused`                                                 |
+| `wallet-rejected`  | `POST /wallet-connections` responde 403 `wallet_rejected`                  |
+| `duplicate-events` | Cada evento chega duplicado, seguido de uma cópia com versão antiga        |
+
+### Controle para testes (`window.__kurioMock`)
+
+Os testes E2E controlam os casos sensíveis a tempo por essa API, sem depender de timers:
+
+- `reset()` e `setScenario(nome)`.
+- `updateEdition({ nftId, editionId }, { price?, available? })`: altera preço ou estoque e emite `nft.updated`.
+- `expireSessions()`: expira todas as sessões abertas.
+- `disconnectRealtime()`: derruba os sockets. O cliente reconecta sozinho.
+- `replayLastEvent()`: reenvia o último evento, para testar duplicatas.
+- `settleOrders()`: liquida na hora os pedidos que já venceram o prazo de pagamento.
+
+### Transporte Socket.IO e limitações
+
+O cliente `socket.io-client` conecta normalmente, e o MSW intercepta o WebSocket com `@mswjs/socket.io-binding`.
+
+- **Só WebSocket.** O cliente precisa usar `transports: ['websocket']`. O long-polling HTTP do Engine.IO não é simulado.
+- **Handshake simulado.** O binding responde ao handshake sozinho e não envia heartbeat. O hub envia um ping Engine.IO a cada 20 s para o cliente não encerrar a conexão por timeout.
+- **Autenticação.** O binding ignora o `auth` do pacote `CONNECT`. O hub lê o pacote cru (`40{"token":…}`) para associar o socket ao usuário. Token ausente ou expirado deixa o socket anônimo, recebendo só eventos públicos. Ao trocar de sessão, o cliente deve reconectar.
+- **Roteamento da conexão.** O MSW remove o prefixo `/socket.io/` antes de comparar URLs, então o handler escuta a origem (`ws://host/`). Para não interceptar outros WebSockets da mesma origem, como o HMR do Vite, conexões sem o parâmetro `EIO` seguem para o servidor real (`connection.server.connect()`).
+- **Sem namespaces nem rooms.** Tudo trafega no namespace `/`, e o filtro por usuário acontece no hub, pelo `userId` do envelope.
+- **Escopo da aba.** O "servidor" vive na aba. Duas abas abertas têm estados em memória independentes que compartilham o mesmo `localStorage`, então eventos de uma aba não chegam à outra.
