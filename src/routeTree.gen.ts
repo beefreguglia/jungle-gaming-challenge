@@ -14,8 +14,8 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as UiPreviewRouteImport } from './routes/ui-preview'
 import { Route as AuthenticatedContaRouteImport } from './routes/_authenticated/conta'
+import { Route as NftsNftIdRouteImport } from './routes/nfts/$nftId'
 import { Route as AuthenticatedContaFavoritosRouteImport } from './routes/_authenticated/conta/favoritos'
 
 const IndexRoute = IndexRouteImport.update({
@@ -42,15 +42,15 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UiPreviewRoute = UiPreviewRouteImport.update({
-  id: '/ui-preview',
-  path: '/ui-preview',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedContaRoute = AuthenticatedContaRouteImport.update({
   id: '/conta',
   path: '/conta',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const NftsNftIdRoute = NftsNftIdRouteImport.update({
+  id: '/nfts/$nftId',
+  path: '/nfts/$nftId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedContaFavoritosRoute =
   AuthenticatedContaFavoritosRouteImport.update({
@@ -64,8 +64,8 @@ export interface FileRoutesByFullPath {
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
-  '/ui-preview': typeof UiPreviewRoute
   '/conta': typeof AuthenticatedContaRouteWithChildren
+  '/nfts/$nftId': typeof NftsNftIdRoute
   '/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
 }
 export interface FileRoutesByTo {
@@ -73,8 +73,8 @@ export interface FileRoutesByTo {
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
-  '/ui-preview': typeof UiPreviewRoute
   '/conta': typeof AuthenticatedContaRouteWithChildren
+  '/nfts/$nftId': typeof NftsNftIdRoute
   '/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
 }
 export interface FileRoutesById {
@@ -84,8 +84,8 @@ export interface FileRoutesById {
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
   '/login': typeof LoginRoute
-  '/ui-preview': typeof UiPreviewRoute
   '/_authenticated/conta': typeof AuthenticatedContaRouteWithChildren
+  '/nfts/$nftId': typeof NftsNftIdRoute
   '/_authenticated/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
 }
 export interface FileRouteTypes {
@@ -95,8 +95,8 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/carrinho'
     | '/login'
-    | '/ui-preview'
     | '/conta'
+    | '/nfts/$nftId'
     | '/conta/favoritos'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -104,8 +104,8 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/carrinho'
     | '/login'
-    | '/ui-preview'
     | '/conta'
+    | '/nfts/$nftId'
     | '/conta/favoritos'
   id:
     | '__root__'
@@ -114,8 +114,8 @@ export interface FileRouteTypes {
     | '/cadastro'
     | '/carrinho'
     | '/login'
-    | '/ui-preview'
     | '/_authenticated/conta'
+    | '/nfts/$nftId'
     | '/_authenticated/conta/favoritos'
   fileRoutesById: FileRoutesById
 }
@@ -125,7 +125,7 @@ export interface RootRouteChildren {
   CadastroRoute: typeof CadastroRoute
   CarrinhoRoute: typeof CarrinhoRoute
   LoginRoute: typeof LoginRoute
-  UiPreviewRoute: typeof UiPreviewRoute
+  NftsNftIdRoute: typeof NftsNftIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,19 +165,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/ui-preview': {
-      id: '/ui-preview'
-      path: '/ui-preview'
-      fullPath: '/ui-preview'
-      preLoaderRoute: typeof UiPreviewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/conta': {
       id: '/_authenticated/conta'
       path: '/conta'
       fullPath: '/conta'
       preLoaderRoute: typeof AuthenticatedContaRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/nfts/$nftId': {
+      id: '/nfts/$nftId'
+      path: '/nfts/$nftId'
+      fullPath: '/nfts/$nftId'
+      preLoaderRoute: typeof NftsNftIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/conta/favoritos': {
       id: '/_authenticated/conta/favoritos'
@@ -218,7 +218,7 @@ const rootRouteChildren: RootRouteChildren = {
   CadastroRoute: CadastroRoute,
   CarrinhoRoute: CarrinhoRoute,
   LoginRoute: LoginRoute,
-  UiPreviewRoute: UiPreviewRoute,
+  NftsNftIdRoute: NftsNftIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
