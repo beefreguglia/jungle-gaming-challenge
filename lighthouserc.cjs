@@ -11,7 +11,7 @@ module.exports = {
       startServerCommand: 'pnpm preview --port 4174 --strictPort',
       startServerReadyPattern: 'Local',
       // Home and NFT detail; keep the detail id in sync with the mock fixtures
-      url: [`${base}/`, `${base}/nfts/1`],
+      url: [`${base}/`, `${base}/nfts/sage-nomad-009`],
       numberOfRuns: 3,
       chromePath: chromium.executablePath(),
       settings: {
