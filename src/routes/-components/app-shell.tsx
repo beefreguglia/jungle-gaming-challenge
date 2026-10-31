@@ -5,7 +5,7 @@ import { useCartCount } from '@/features/cart'
 import { cn } from '@/shared/lib/utils'
 
 import { MobileTabBar } from './shell/mobile-tab-bar'
-import { hasMobileActionBar, isAuthPath } from './shell/navigation'
+import { hasMobileActionBar, hidesMobileTabBar, isAuthPath } from './shell/navigation'
 import { SiteFooter } from './shell/site-footer'
 import { SiteHeader } from './shell/site-header'
 
@@ -24,6 +24,7 @@ export function AppShell({ children }: AppShellProps) {
   const { pathname } = useLocation()
   const fullScreenOnMobile = isAuthPath(pathname)
   const actionBar = hasMobileActionBar(pathname)
+  const tabBar = !fullScreenOnMobile && !hidesMobileTabBar(pathname)
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -39,14 +40,15 @@ export function AppShell({ children }: AppShellProps) {
       </main>
       <div
         className={cn(
-          'pb-24 md:block md:pb-0',
+          'pb-6 md:block md:pb-0',
+          tabBar && 'pb-24',
           fullScreenOnMobile && 'hidden',
           actionBar && 'pb-44',
         )}
       >
         <SiteFooter />
       </div>
-      {fullScreenOnMobile || actionBar ? null : <MobileTabBar cartCount={cartCount} />}
+      {tabBar ? <MobileTabBar cartCount={cartCount} /> : null}
     </div>
   )
 }

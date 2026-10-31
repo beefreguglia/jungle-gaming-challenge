@@ -23,3 +23,8 @@ export function isAuthPath(pathname: string): boolean {
 export function hasMobileActionBar(pathname: string): boolean {
   return pathname.startsWith('/nfts/')
 }
+
+// The mobile cart pins its payment summary where the tab bar would be (Figma frame)
+export function hidesMobileTabBar(pathname: string): boolean {
+  return hasMobileActionBar(pathname) || pathname === '/carrinho'
+}
