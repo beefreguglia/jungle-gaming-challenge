@@ -136,10 +136,12 @@ export function createMockServer({
       if (!isScenarioName(name)) throw new Error(`Unknown mock scenario "${name}"`)
       scenarioName = name
       storage.set(SCENARIO_KEY, name)
+      route.resetNetwork()
       rearmCheckoutDisruption()
     },
     reset() {
       db.reset()
+      route.resetNetwork()
       rearmCheckoutDisruption()
     },
     updateEdition: (target, patch) => void updateEdition(backend, target, patch),

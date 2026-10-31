@@ -58,8 +58,8 @@ function injectedFailure(rule: FailureRule): Response {
  * injected failures) and maps MockApiError to the error envelope. Handlers only describe
  * the happy path of their resource.
  */
-export function createRoute(backend: Backend, apiBase: string): RouteFn {
-  const random = seededRandom(2026)
+export function createRoute(backend: Backend, apiBase: string): RouteFn & { resetNetwork(): void } {
+  let random = seededRandom(2026)
   const failureCounts = new Map<FailureRule, number>()
   let catalogRequests = 0
 
@@ -84,7 +84,7 @@ export function createRoute(backend: Backend, apiBase: string): RouteFn {
     return rule.times === undefined || count <= rule.times ? rule : null
   }
 
-  return (method, path, resolve) =>
+  const route: RouteFn = (method, path, resolve) =>
     http[method](`${apiBase}${path}`, async ({ request, params }) => {
       const scenario = backend.scenario()
       await delay(latencyFor(scenario, method, path))
@@ -116,4 +116,14 @@ export function createRoute(backend: Backend, apiBase: string): RouteFn {
         )
       }
     })
+
+  return Object.assign(route, {
+    // Restarts what makes a scenario reproducible: the latency sequence and the counters of
+    // "fail N times" and out-of-order responses
+    resetNetwork() {
+      random = seededRandom(2026)
+      failureCounts.clear()
+      catalogRequests = 0
+    },
+  })
 }
