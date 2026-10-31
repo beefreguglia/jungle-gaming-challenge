@@ -2,8 +2,8 @@
   {
     "url": "http://localhost:4174/",
     "isRepresentativeRun": true,
-    "htmlPath": "/home/kinload/projetos/frontend-challenge/reports/lighthouse/desktop/lh--2026_10_31_20_32_04-report.html",
-    "jsonPath": "/home/kinload/projetos/frontend-challenge/reports/lighthouse/desktop/lh--2026_10_31_20_32_04-report.json",
+    "htmlPath": "/home/kinload/projetos/frontend-challenge/reports/lighthouse/local/desktop/lh--2026_10_31_20_32_04-report.html",
+    "jsonPath": "/home/kinload/projetos/frontend-challenge/reports/lighthouse/local/desktop/lh--2026_10_31_20_32_04-report.json",
     "summary": {
       "performance": 0.98,
       "accessibility": 1,
@@ -14,8 +14,8 @@
   {
     "url": "http://localhost:4174/nfts/sage-nomad-009",
     "isRepresentativeRun": true,
-    "htmlPath": "/home/kinload/projetos/frontend-challenge/reports/lighthouse/desktop/lh-nfts_sage_nomad_009-2026_10_31_20_32_33-report.html",
-    "jsonPath": "/home/kinload/projetos/frontend-challenge/reports/lighthouse/desktop/lh-nfts_sage_nomad_009-2026_10_31_20_32_33-report.json",
+    "htmlPath": "/home/kinload/projetos/frontend-challenge/reports/lighthouse/local/desktop/lh-nfts_sage_nomad_009-2026_10_31_20_32_33-report.html",
+    "jsonPath": "/home/kinload/projetos/frontend-challenge/reports/lighthouse/local/desktop/lh-nfts_sage_nomad_009-2026_10_31_20_32_33-report.json",
     "summary": {
       "performance": 0.98,
       "accessibility": 1,

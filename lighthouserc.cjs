@@ -1,16 +1,24 @@
 // Lighthouse CI config. Profile is chosen via LH_PROFILE=mobile|desktop (not LHCI_*: lhci
 // reads every LHCI_* variable as one of its own CLI options and LHCI_PRESET broke `assert`).
-// Runs against the optimized build (`pnpm build`) with the default mock scenario.
+// Target: the optimized build served locally (`pnpm build`), or the published app when
+// LH_URL is set (`pnpm lighthouse:production`). Both run the default mock scenario.
 const { chromium } = require('@playwright/test')
 
 const preset = process.env.LH_PROFILE === 'desktop' ? 'desktop' : 'mobile'
-const base = 'http://localhost:4174'
+const published = process.env.LH_URL?.replace(/\/$/, '')
+const base = published ?? 'http://localhost:4174'
+const target = published ? 'production' : 'local'
 
 module.exports = {
   ci: {
     collect: {
-      startServerCommand: 'pnpm preview --port 4174 --strictPort',
-      startServerReadyPattern: 'Local',
+      // The published app is already served (HTTP/2, compression, CDN); locally, vite preview
+      ...(published
+        ? {}
+        : {
+            startServerCommand: 'pnpm preview --port 4174 --strictPort',
+            startServerReadyPattern: 'Local',
+          }),
       // Home and NFT detail; keep the detail id in sync with the mock fixtures
       url: [`${base}/`, `${base}/nfts/sage-nomad-009`],
       numberOfRuns: 3,
@@ -37,7 +45,7 @@ module.exports = {
     },
     upload: {
       target: 'filesystem',
-      outputDir: `reports/lighthouse/${preset}`,
+      outputDir: `reports/lighthouse/${target}/${preset}`,
       reportFilenamePattern: 'lh-%%PATHNAME%%-%%DATETIME%%-report.%%EXTENSION%%',
     },
   },

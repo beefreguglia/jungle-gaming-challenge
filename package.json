@@ -20,6 +20,7 @@
     "lighthouse": "pnpm build && pnpm lighthouse:mobile && pnpm lighthouse:desktop",
     "lighthouse:mobile": "LH_PROFILE=mobile lhci autorun",
     "lighthouse:desktop": "LH_PROFILE=desktop lhci autorun",
+    "lighthouse:production": "LH_URL=https://kurio-beefreguglia.vercel.app pnpm lighthouse:mobile && LH_URL=https://kurio-beefreguglia.vercel.app pnpm lighthouse:desktop",
     "lint:fix": "oxlint --fix",
     "prepare": "lefthook install"
   },
