@@ -1,9 +1,8 @@
 import { MailIcon, StarIcon } from 'lucide-react'
-import { siX } from 'simple-icons'
 
 import type { NftDetail } from '@/domain/nft'
 import { cn } from '@/shared/lib/utils'
-import { BrandIcon } from '@/shared/ui/brand-icon'
+import { LinkedinIcon, TwitterIcon } from '@/shared/ui/icons'
 
 const ratingLabel = ({ average, count }: NftDetail['rating']) =>
   `Avaliação ${average.toFixed(1).replace('.', ',')} de 5, ${count} avaliações de colecionadores`
@@ -72,7 +71,7 @@ export function ShareLinks({ nft }: { nft: NftDetail }) {
     {
       label: 'LinkedIn',
       href: `https://www.linkedin.com/sharing/share-offsite/?url=${url}`,
-      icon: <span className="text-14 font-bold">in</span>,
+      icon: <LinkedinIcon className="size-3.5" />,
     },
     {
       label: 'e-mail',
@@ -80,9 +79,9 @@ export function ShareLinks({ nft }: { nft: NftDetail }) {
       icon: <MailIcon className="size-4" />,
     },
     {
-      label: 'X (Twitter)',
+      label: 'Twitter',
       href: `https://x.com/intent/post?url=${url}&text=${text}`,
-      icon: <BrandIcon icon={siX} className="size-3.5" />,
+      icon: <TwitterIcon />,
     },
   ]
   return (

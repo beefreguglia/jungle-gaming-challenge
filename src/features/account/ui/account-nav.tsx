@@ -3,9 +3,7 @@ import {
   ActivityIcon,
   DownloadIcon,
   HeartIcon,
-  LogOutIcon,
   MapPinIcon,
-  ShoppingCartIcon,
   TriangleAlertIcon,
   UserRoundIcon,
 } from 'lucide-react'
@@ -14,6 +12,7 @@ import type * as React from 'react'
 import { useLogout } from '@/features/auth'
 import { cn } from '@/shared/lib/utils'
 import { ComingSoon } from '@/shared/ui/coming-soon'
+import { CartIcon, LogoutIcon } from '@/shared/ui/icons'
 
 type AccountPath = '/conta/perfil' | '/conta/carteiras' | '/conta/favoritos'
 
@@ -35,7 +34,7 @@ const SECTIONS: {
 
 // Sidebar entries outside the delivered scope (editorial/support pages)
 const COMING_SOON = [
-  { label: 'Atividade', icon: ShoppingCartIcon, after: '/conta/carteiras' },
+  { label: 'Atividade', icon: CartIcon, after: '/conta/carteiras' },
   { label: 'Ofertas', icon: ActivityIcon, after: '/conta/favoritos' },
   { label: 'Arquivos baixados', icon: DownloadIcon, after: '/conta/favoritos' },
   { label: 'Suporte', icon: TriangleAlertIcon, after: '/conta/favoritos' },
@@ -56,7 +55,7 @@ function LogoutButton({ className }: { className?: string }) {
         className,
       )}
     >
-      <LogOutIcon className="size-5" aria-hidden="true" />
+      <LogoutIcon className="size-5" aria-hidden="true" />
       Sair
     </button>
   )

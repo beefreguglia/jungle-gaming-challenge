@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router'
-import { ShoppingCartIcon } from 'lucide-react'
 import type * as React from 'react'
 
 import { Button } from '@/shared/ui/button'
+import { CartIcon } from '@/shared/ui/icons'
 import { MarketBreadcrumb, MobilePageHeader } from '@/shared/ui/page-header'
 import { Skeleton } from '@/shared/ui/skeleton'
 
@@ -14,7 +14,7 @@ import { CartSummary } from './cart-summary'
 function EmptyCart() {
   return (
     <div className="flex flex-col items-center gap-4 rounded-sm border border-dashed border-border-soft px-6 py-16 text-center md:col-span-full">
-      <ShoppingCartIcon className="size-10 text-accent-foreground" aria-hidden="true" />
+      <CartIcon className="size-10 text-accent-foreground" aria-hidden="true" />
       <p className="text-16 font-bold">Seu carrinho está vazio</p>
       <p className="max-w-sm text-14 text-muted-foreground">
         Explore o catálogo e adicione os NFTs que quiser colecionar.

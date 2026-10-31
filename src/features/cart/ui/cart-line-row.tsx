@@ -1,9 +1,9 @@
 import { Link } from '@tanstack/react-router'
-import { Trash2Icon } from 'lucide-react'
 
 import { type CartLine, cartLineStatus, cartLineTotal } from '@/domain/cart'
 import { formatEth } from '@/domain/money'
 import { cn } from '@/shared/lib/utils'
+import { DeleteIcon } from '@/shared/ui/icons'
 import { NftImage } from '@/shared/ui/nft-image'
 import { QuantityStepper } from '@/shared/ui/quantity-stepper'
 
@@ -105,9 +105,9 @@ export function CartLineRow({ line }: { line: CartLine }) {
         aria-label={`Remover ${line.name} (${line.editionName}) do carrinho`}
         disabled={busy}
         onClick={() => remove.mutate(line.id)}
-        className="absolute top-2 right-2 grid size-8 place-items-center rounded-sm text-subtle hover:text-accent-foreground md:static md:justify-self-end"
+        className="absolute top-2 right-2 grid size-8 place-items-center rounded-sm text-primary hover:text-accent-foreground md:static md:justify-self-end"
       >
-        <Trash2Icon className="size-5" aria-hidden="true" />
+        <DeleteIcon className="size-6" />
       </button>
 
       <StockProblem line={line} onFix={setQuantity} />

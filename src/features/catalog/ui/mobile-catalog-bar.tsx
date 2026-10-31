@@ -1,7 +1,7 @@
-import { SearchIcon } from 'lucide-react'
 import { useEffect, useId, useState } from 'react'
 
 import type { NftFacets, NftListParams } from '@/domain/nft'
+import { SearchIcon } from '@/shared/ui/icons'
 
 import type { CatalogChange } from '../model/catalog-filters'
 import { FiltersSheet } from './filters-sheet'

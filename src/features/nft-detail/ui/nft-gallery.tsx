@@ -1,10 +1,11 @@
 import { useRouter } from '@tanstack/react-router'
-import { ChevronLeftIcon, ZoomInIcon } from 'lucide-react'
+import { ZoomInIcon } from 'lucide-react'
 
 import type { NftDetail } from '@/domain/nft'
 import { FavoriteButton } from '@/features/favorites'
 import { cn } from '@/shared/lib/utils'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/shared/ui/dialog'
+import { ChevronLeftIcon } from '@/shared/ui/icons'
 import { NftImage } from '@/shared/ui/nft-image'
 
 interface GalleryProps {

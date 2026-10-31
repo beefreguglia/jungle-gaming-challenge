@@ -1,5 +1,4 @@
 import { Link } from '@tanstack/react-router'
-import { ShoppingCartIcon } from 'lucide-react'
 import { useMemo } from 'react'
 import type * as React from 'react'
 
@@ -7,6 +6,7 @@ import { useProfile, useWallets } from '@/features/account'
 import { useCart } from '@/features/cart'
 import { Button } from '@/shared/ui/button'
 import { FormAlert } from '@/shared/ui/form-alert'
+import { CartIcon } from '@/shared/ui/icons'
 import { MarketBreadcrumb, MobilePageHeader } from '@/shared/ui/page-header'
 import { Skeleton } from '@/shared/ui/skeleton'
 
@@ -38,7 +38,7 @@ function CheckoutSkeleton() {
 function EmptyCheckout() {
   return (
     <div className="flex flex-col items-center gap-4 rounded-sm border border-dashed border-border-soft px-6 py-16 text-center">
-      <ShoppingCartIcon className="size-10 text-accent-foreground" aria-hidden="true" />
+      <CartIcon className="size-10 text-accent-foreground" aria-hidden="true" />
       <p className="text-16 font-bold">Não há nada para pagar</p>
       <p className="max-w-sm text-14 text-muted-foreground">
         Seu carrinho está vazio. Adicione NFTs do catálogo para finalizar uma compra.

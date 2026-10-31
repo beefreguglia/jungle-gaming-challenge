@@ -1,10 +1,9 @@
-import { siFacebook } from 'simple-icons'
-
-import { BrandIcon, GoogleIcon } from '@/shared/ui/brand-icon'
+import { GoogleIcon } from '@/shared/ui/brand-icon'
 import { ComingSoon } from '@/shared/ui/coming-soon'
+import { FacebookIcon } from '@/shared/ui/icons'
 
 const providerClass =
-  'flex h-10 w-full items-center justify-center gap-3 rounded-sm border border-border text-caption text-muted-foreground'
+  'flex h-10 w-full items-center justify-center gap-3 rounded-button border border-border text-caption text-muted-foreground'
 
 /**
  * "Ou continue com" from the Figma. Social sign-in is outside the delivered scope, so the
@@ -23,7 +22,7 @@ export function SocialSignIn() {
         Continuar com Google
       </ComingSoon>
       <ComingSoon reason="Entrar com Facebook em breve" className={providerClass}>
-        <BrandIcon icon={siFacebook} className="text-facebook" />
+        <FacebookIcon className="text-facebook" />
         Continuar com Facebook
       </ComingSoon>
     </div>

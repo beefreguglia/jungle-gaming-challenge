@@ -1,9 +1,11 @@
 import { Link } from '@tanstack/react-router'
-import { siFacebook, siInstagram, siX, siYoutube, type SimpleIcon } from 'simple-icons'
+import type { ReactNode } from 'react'
+import { siInstagram, siYoutube } from 'simple-icons'
 
 import type { NftCollection } from '@/domain/nft'
 import { BrandIcon } from '@/shared/ui/brand-icon'
 import { ComingSoon } from '@/shared/ui/coming-soon'
+import { FacebookIcon, LinkedinIcon, TwitterIcon } from '@/shared/ui/icons'
 import { WalletsBadge } from '@/shared/ui/wallets-badge'
 
 import { NewsletterForm } from './newsletter-form'
@@ -42,13 +44,14 @@ const HELP_LINKS = [
   'Denunciar item',
 ]
 
-const SOCIAL: { label: string; href: string; icon?: SimpleIcon; text?: string }[] = [
-  { label: 'Facebook', href: 'https://www.facebook.com', icon: siFacebook },
-  { label: 'Instagram', href: 'https://www.instagram.com', icon: siInstagram },
-  { label: 'X (Twitter)', href: 'https://x.com', icon: siX },
-  // LinkedIn is not in simple-icons; the Figma draws it as "in" text anyway
-  { label: 'LinkedIn', href: 'https://www.linkedin.com', text: 'in' },
-  { label: 'YouTube', href: 'https://www.youtube.com', icon: siYoutube },
+// Facebook, Twitter and LinkedIn are the Figma icons; Instagram and YouTube, not exported
+// from the file, come from simple-icons
+const SOCIAL: { label: string; href: string; icon: ReactNode }[] = [
+  { label: 'Facebook', href: 'https://www.facebook.com', icon: <FacebookIcon /> },
+  { label: 'Instagram', href: 'https://www.instagram.com', icon: <BrandIcon icon={siInstagram} /> },
+  { label: 'Twitter', href: 'https://x.com', icon: <TwitterIcon /> },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com', icon: <LinkedinIcon /> },
+  { label: 'YouTube', href: 'https://www.youtube.com', icon: <BrandIcon icon={siYoutube} /> },
 ]
 
 const headingClass = 'mb-3 text-body-lg font-bold'
@@ -152,21 +155,15 @@ function SitemapColumns() {
       <div>
         <h2 className={headingClass}>Redes sociais</h2>
         <ul className="mb-6 flex gap-2">
-          {SOCIAL.map(({ label, href, icon, text }) => (
+          {SOCIAL.map(({ label, href, icon }) => (
             <li key={label}>
               <a
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="grid size-8 place-items-center rounded-sm border border-primary text-accent-foreground hover:bg-primary/10"
+                className="grid size-8 place-items-center rounded-button border border-primary text-primary hover:bg-primary/10"
               >
-                {icon ? (
-                  <BrandIcon icon={icon} />
-                ) : (
-                  <span aria-hidden="true" className="text-body font-bold">
-                    {text}
-                  </span>
-                )}
+                {icon}
                 <span className="sr-only">{label} (abre em nova aba)</span>
               </a>
             </li>

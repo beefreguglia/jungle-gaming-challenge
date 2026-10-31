@@ -1,9 +1,8 @@
-import { ShoppingCartIcon } from 'lucide-react'
-
 import { formatEth, multiplyEth } from '@/domain/money'
 import type { NftDetail, NftEdition } from '@/domain/nft'
 import { FavoriteButton } from '@/features/favorites'
 import { Button } from '@/shared/ui/button'
+import { CartIcon } from '@/shared/ui/icons'
 import { QuantityStepper } from '@/shared/ui/quantity-stepper'
 
 import { usePurchase } from '../model/use-purchase'
@@ -55,8 +54,9 @@ export function BuyActions({ nft, edition, quantity, onQuantityChange }: BuyActi
         {purchase.soldOut && <SoldOutNotice />}
         <div className="flex gap-3">
           <Button
+            variant="cta"
             size="xl"
-            className="flex-1 bg-linear-to-br from-accent-foreground to-primary"
+            className="flex-1"
             disabled={blocked}
             onClick={purchase.buyNow}
           >
@@ -69,7 +69,7 @@ export function BuyActions({ nft, edition, quantity, onQuantityChange }: BuyActi
             onClick={purchase.addOnly}
             className="grid size-15 shrink-0 place-items-center rounded-full border border-border-soft bg-secondary text-accent-foreground disabled:opacity-50"
           >
-            <ShoppingCartIcon className="size-5" aria-hidden="true" />
+            <CartIcon className="size-5" aria-hidden="true" />
           </button>
         </div>
       </div>

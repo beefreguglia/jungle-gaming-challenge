@@ -1,8 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
-import { SearchIcon, XIcon } from 'lucide-react'
+import { XIcon } from 'lucide-react'
 import { useId, useRef, useState } from 'react'
 
 import { Button } from '@/shared/ui/button'
+import { SearchIcon } from '@/shared/ui/icons'
 import { Input } from '@/shared/ui/input'
 
 /** Header search: expands into a field and sends the term to the catalog (`/?q=`). */

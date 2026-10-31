@@ -1,5 +1,6 @@
 import { Link, useRouter } from '@tanstack/react-router'
-import { ChevronLeftIcon } from 'lucide-react'
+
+import { ChevronLeftIcon } from './icons'
 
 /**
  * Mobile screen header from the Figma frames (cart, payment): round back button and a
