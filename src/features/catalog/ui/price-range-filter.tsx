@@ -39,9 +39,10 @@ export function PriceRangeFilter({ bounds, value, onApply }: PriceRangeFilterPro
 
   return (
     <div role="group" aria-labelledby={titleId} className="flex flex-col gap-3">
-      <h3 id={titleId} className="text-16 font-bold">
+      {/* Group label, not a section heading: it sat out of the heading order */}
+      <p id={titleId} className="text-16 font-bold">
         Faixa de preço
-      </h3>
+      </p>
       <Slider
         min={floor}
         max={ceil}
