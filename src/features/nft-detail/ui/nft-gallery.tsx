@@ -111,10 +111,16 @@ export function DesktopGallery({ nft, active, onSelect }: GalleryProps) {
           </DialogTrigger>
           <DialogContent
             aria-describedby={undefined}
-            className="max-w-[min(90vw,48rem)] p-3 sm:max-w-[min(90vw,48rem)]"
+            className="w-auto max-w-none p-3 sm:max-w-none"
           >
             <DialogTitle className="sr-only">{nft.name}</DialogTitle>
-            <NftImage image={image} sizes="768px" className="w-full rounded-xl" />
+            {/* Square art sized by the smaller side, so zoomed-in or short screens keep the
+                whole image and the close button in view */}
+            <NftImage
+              image={image}
+              sizes="768px"
+              className="h-auto w-[min(calc(90vw-1.5rem),calc(90dvh-1.5rem),45rem)] rounded-xl"
+            />
           </DialogContent>
         </Dialog>
       </div>

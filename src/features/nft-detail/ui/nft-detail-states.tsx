@@ -7,7 +7,9 @@ import { Skeleton } from '@/shared/ui/skeleton'
 /** Same layout as the loaded page (mobile hero + sheet, desktop two columns). */
 export function NftDetailSkeleton() {
   return (
-    <div aria-busy="true" aria-label="Carregando NFT" className="flex flex-col">
+    // At least one screen tall: the footer starts below the fold, so the real page (taller
+    // than this placeholder) never pushes it in view (CLS)
+    <div aria-busy="true" aria-label="Carregando NFT" className="flex min-h-dvh flex-col">
       <div className="bg-card px-7 pt-6 pb-32 md:hidden" aria-hidden="true">
         <div className="mb-3 flex justify-between">
           <Skeleton className="size-9 rounded-full" />
