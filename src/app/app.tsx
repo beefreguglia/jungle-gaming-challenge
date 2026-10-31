@@ -24,33 +24,40 @@ const MockPanel = env.enableMocks
   ? lazy(() => import('./mock-panel').then((m) => ({ default: m.MockPanel })))
   : () => null
 
-const services = createAppServices()
-const router = createAppRouter({
-  queryClient: services.queryClient,
-  http: services.http,
-  session: services.session,
-})
-bindSessionLifecycle(services, router)
+/**
+ * Builds the app: services (HTTP, socket, session), router and their wiring. A factory, not
+ * module code, so the bundle can download while MSW starts; it must run only after the
+ * mock worker is ready, since services open the socket and validate the session at once.
+ */
+export function createApp() {
+  const services = createAppServices()
+  const router = createAppRouter({
+    queryClient: services.queryClient,
+    http: services.http,
+    session: services.session,
+  })
+  bindSessionLifecycle(services, router)
 
-export function App() {
-  return (
-    <QueryClientProvider client={services.queryClient}>
-      <HttpClientContext value={services.http}>
-        <RealtimeClientContext value={services.realtime}>
-          <SessionContext value={services.session}>
-            <CartIdContext value={services.cartIds}>
-              <TooltipProvider delayDuration={200}>
-                <RouterProvider router={router} />
-              </TooltipProvider>
-            </CartIdContext>
-          </SessionContext>
-        </RealtimeClientContext>
-      </HttpClientContext>
-      <Toaster position="top-center" />
-      <Suspense>
-        <MockPanel />
-        <QueryDevtools />
-      </Suspense>
-    </QueryClientProvider>
-  )
+  return function App() {
+    return (
+      <QueryClientProvider client={services.queryClient}>
+        <HttpClientContext value={services.http}>
+          <RealtimeClientContext value={services.realtime}>
+            <SessionContext value={services.session}>
+              <CartIdContext value={services.cartIds}>
+                <TooltipProvider delayDuration={200}>
+                  <RouterProvider router={router} />
+                </TooltipProvider>
+              </CartIdContext>
+            </SessionContext>
+          </RealtimeClientContext>
+        </HttpClientContext>
+        <Toaster position="top-center" />
+        <Suspense>
+          <MockPanel />
+          <QueryDevtools />
+        </Suspense>
+      </QueryClientProvider>
+    )
+  }
 }

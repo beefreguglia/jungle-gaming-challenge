@@ -9,11 +9,11 @@ import './index.css'
 const rootElement = document.getElementById('root')
 if (!rootElement) throw new Error('Root element #root not found')
 
-// The first paint waits for the mock network and (briefly) the typeface, in parallel
-await Promise.all([enableMocking(), loadFonts()])
-// Imported only now: loading the app module creates the services, which open the socket and
-// validate the session right away, and those requests must already be intercepted by MSW
-const { App } = await import('@/app/app')
+// The app bundle, the mock network and (briefly) the typeface load in parallel. Importing
+// the app has no side effects; createApp() runs only once MSW intercepts requests, because
+// the services open the socket and validate the session right away
+const [{ createApp }] = await Promise.all([import('@/app/app'), enableMocking(), loadFonts()])
+const App = createApp()
 
 createRoot(rootElement).render(
   <StrictMode>
