@@ -4,7 +4,11 @@ import { signUpFormSchema } from './auth'
 import { toggleFavorite } from './favorites'
 import { avatarProblem, passwordFormSchema } from './profile'
 import { isValidWalletAddress, shortenHash } from './validation'
-import { secondaryWalletInputSchema, walletConnectionInputSchema } from './wallet'
+import {
+  secondaryWalletInputSchema,
+  walletConnectionInputSchema,
+  walletInputSchema,
+} from './wallet'
 
 // First message per field, which is what the form displays
 function messages(result: { error?: { issues: { path: PropertyKey[]; message: string }[] } }) {
@@ -68,6 +72,22 @@ describe('wallet addresses', () => {
       address: '0x7A42c1d3e5F60718293a4B5c6D7e8F9012a319E8',
     }
     expect(walletConnectionInputSchema.safeParse(connection).success).toBe(false)
+  })
+
+  it('reports a wrong address together with the other field errors', () => {
+    const result = walletInputSchema.safeParse({
+      displayName: '',
+      nickname: 'Cofre',
+      network: 'solana',
+      profileName: 'Nova',
+      address: '0x7A42c1d3e5F60718293a4B5c6D7e8F9012a319E8',
+      provider: 'coinbase',
+      referralCode: 'KURIO2026',
+      email: 'nova@kurio.art',
+      ensLabel: 'novasato',
+    })
+    const paths = result.error?.issues.map((issue) => issue.path[0])
+    expect(paths).toEqual(expect.arrayContaining(['displayName', 'address']))
   })
 
   it('accepts a secondary wallet linked to the primary', () => {

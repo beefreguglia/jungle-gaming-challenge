@@ -5,7 +5,12 @@ import { nftNetworkSchema } from './nft'
 import { quoteLineSchema } from './quote'
 import { usernameSchema } from './validation'
 import { isNewerVersion } from './versioning'
-import { refineWalletAddress, walletFieldsSchema, walletProviderSchema } from './wallet'
+import {
+  ADDRESS_RULE_PARAMS,
+  refineWalletAddress,
+  walletFieldsSchema,
+  walletProviderSchema,
+} from './wallet'
 
 // Sent on POST /orders. Same key + same body → same order; same key + other body → 409.
 export const IDEMPOTENCY_HEADER = 'Idempotency-Key'
@@ -22,7 +27,7 @@ export const checkoutDetailsSchema = walletFieldsSchema
     username: usernameSchema,
     note: z.string().trim().max(500, 'Use no máximo 500 caracteres').optional(),
   })
-  .superRefine(refineWalletAddress)
+  .superRefine(refineWalletAddress, ADDRESS_RULE_PARAMS)
 
 export type CheckoutDetails = z.infer<typeof checkoutDetailsSchema>
 

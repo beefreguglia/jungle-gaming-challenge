@@ -59,7 +59,19 @@ export function refineWalletAddress(
   }
 }
 
-export const walletInputSchema = walletFieldsSchema.superRefine(refineWalletAddress)
+/**
+ * Runs the address rule whenever network and address themselves parsed, even if other
+ * fields failed: the user sees every error at once instead of this one only at the end.
+ */
+export const ADDRESS_RULE_PARAMS = {
+  when: (payload: { issues: readonly { path?: readonly PropertyKey[] }[] }) =>
+    !payload.issues.some((issue) => issue.path?.[0] === 'network' || issue.path?.[0] === 'address'),
+}
+
+export const walletInputSchema = walletFieldsSchema.superRefine(
+  refineWalletAddress,
+  ADDRESS_RULE_PARAMS,
+)
 
 export type WalletInput = z.infer<typeof walletInputSchema>
 
@@ -101,8 +113,10 @@ const walletConnectionFieldsSchema = z.object({
   address: z.string().trim(),
 })
 
-export const walletConnectionInputSchema =
-  walletConnectionFieldsSchema.superRefine(refineWalletAddress)
+export const walletConnectionInputSchema = walletConnectionFieldsSchema.superRefine(
+  refineWalletAddress,
+  ADDRESS_RULE_PARAMS,
+)
 
 // Refined schemas cannot be extended, so the response builds on the plain fields
 export const walletConnectionSchema = walletConnectionFieldsSchema.extend({
