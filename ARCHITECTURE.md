@@ -353,7 +353,7 @@ Os tokens vêm das variáveis do arquivo Figma e ficam em `src/index.css`, mapea
 - **Tempo real.** `catalogRealtimeApplier` aplica `nft.updated` em todas as páginas em cache (`applyNftUpdate`, que ignora versões antigas). Os cards mostram o preço novo sem refetch; após reconexão, as queries com `meta.realtime` são reconsultadas.
 - **Acessibilidade.** O total de resultados e a página são anunciados numa região `aria-live`. A troca de página leva o foco ao início dos resultados. Os filtros são botões com `aria-pressed`, e a seleção é indicada por cor e por marca de seleção. A faixa de preço tem rótulo e valor falado (`aria-valuetext`) em cada controle.
 - **Imagens.** As quatro artes do Figma ficam em `public/images/nfts/` como WebP de 960 e 480 px (originais de 1254 px), servidas com `srcset`, `sizes` e dimensões intrínsecas. A arte da hero e os três primeiros cards carregam com prioridade alta, por fazerem parte do LCP.
-- **Fonte antes da primeira pintura.** `main.tsx` espera a Roboto Mono, por no máximo 1,2 s e em paralelo com o MSW. Pintar com a fonte de fallback e trocar depois quebrava o título da hero em uma linha a mais, com CLS de 0,20 no mobile.
+- **Fonte antes da primeira pintura.** `main.tsx` espera a Roboto Mono, por no máximo 1,2 s e em paralelo com o MSW e com o download do app. Pintar com a fonte de fallback e trocar depois quebrava o título da hero em uma linha a mais, com CLS de 0,20 no mobile.
 
 ## Detalhe do NFT, favoritos e base do carrinho
 
@@ -399,3 +399,34 @@ Os tokens vêm das variáveis do arquivo Figma e ficam em `src/index.css`, mapea
 - **Validação.** No pagamento, enviar com campos inválidos marca todos com `aria-invalid` e foca o primeiro. O erro de endereço por rede (`refineWalletAddress`) usa a opção `when` do Zod 4 e aparece junto com os outros erros, em vez de só depois de corrigir o resto; a mensagem é a descrição acessível do campo.
 - **Regressão visual.** `e2e/visual.spec.ts` compara início, detalhe, carrinho e pagamento com baselines versionadas em `e2e/__screenshots__/<projeto>/` (desktop 1440 e mobile 390; atualizar com `pnpm test:e2e:update`). Antes da captura: rede ociosa, nenhum `aria-busy`, imagens lazy forçadas para carregamento imediato e decodificadas. O painel de cenários, os toasts e a tab bar fixa (que a captura de página inteira fixaria numa altura arbitrária) ficam ocultos por `e2e/support/screenshot.css`. A tolerância é de 1% dos pixels.
 - **Bug encontrado pela regressão visual.** O carrossel calculava as páginas com `scrollWidth / clientWidth`. Com a lista sem largura (oculta ou ainda sem layout), o resultado era `Infinity`, e `Array.from` derrubava a página inteira. Agora a medição é ignorada enquanto a largura é 0.
+
+## Responsividade, zoom e SEO
+
+- **Varredura responsiva.** 108 estados verificados em 320, 390, 640 (zoom de 200% sobre 1280), 768, 1024 e 1440 px: páginas públicas, 404, carrinho com itens, pagamento (inicial, com erros de validação e aviso de valores alterados, com carteira conectada), pedido pendente, recusado, recibo, pagamento vazio e área da conta. Nenhum overflow horizontal e nenhum elemento além da viewport fora das áreas de rolagem intencional (carrosséis).
+- **Zoom com pouca altura.** Com zoom de 200% numa tela 1280×720, a viewport tem 640×360. Login e cadastro rolam dentro do diálogo e o painel de filtros rola dentro da folha. A arte ampliada é dimensionada pelo menor lado disponível (`min(90vw, 90dvh, 45rem)`); antes, saía da tela em cima e embaixo, com o botão de fechar fora de alcance.
+- **Inicialização em paralelo.** O módulo do app não tem efeitos colaterais: `createApp()` cria serviços, router e ciclo de sessão. Por isso `main.tsx` baixa o app junto com o MSW e a fonte, e só chama `createApp()` depois que o worker intercepta as requisições. Uma exceção pede cuidado: o Engine.IO guarda `globalThis.WebSocket` ao ser avaliado, e o MSW só troca essa classe quando o worker inicia. Por isso o `socket.io-client` é importado sob demanda no primeiro `connect()` (`realtime-client.ts`), que acontece depois do MSW. Importá-lo com o app fazia o socket ir para o servidor real, com erro no console e sem eventos; os E2E de tempo real cobrem esse caminho. Na mesma máquina e nas mesmas condições (Lighthouse mobile, mediana de 3), o LCP do início caiu de 7,8 s para 5,8 s.
+- **Tela inicial.** O `index.html` traz dentro de `#root` a marca e "Carregando o marketplace…" (`role="status"`, estilos inline), trocadas pelo React na montagem. O FCP mobile foi de 3,9 s para 1,8 s, sem CLS. A nota de performance não muda: o carregamento do MSW e do app, que antes ficava antes do FCP, passa a contar no TBT (que mede do FCP ao TTI). A tela vazia é que deixou de existir.
+- **Esqueleto com altura de tela.** O placeholder do detalhe do NFT tem `min-h-dvh`. Mais baixo que a página real, ele deixava o rodapé visível e depois empurrado para baixo (CLS de 0,15 no desktop).
+- **Limite do MSW.** O chunk do MSW tem cerca de 470 KB; quase tudo é a própria biblioteca e suas dependências de cookies (`tough-cookie` e a lista de sufixos do `tldts`), que o app nem usa, já que autentica por token. Substituir essas dependências por stubs mexeria em internals de terceiros num caminho que só existe na demo; em produção, com API real, esse chunk não é carregado.
+- **Títulos em ordem.** "Faixa de preço" é o rótulo de um grupo de controles (`role="group"` + `aria-labelledby`), não um `h3`: ele aparecia antes do primeiro `h2` da página (auditoria `heading-order` do Lighthouse, que não faz parte das regras WCAG do axe).
+- **SEO.** Toda rota tem título e descrição próprios: o NFT usa nome e descrição; o 404 do NFT, do pedido e de URL inexistente têm título de "não encontrado" (uma URL sem rota é reconhecida por ter apenas o match da raiz). Páginas privadas (pagamento, conta e pedidos) recebem `noindex` pelo layout `_authenticated` e ficam em `Disallow` no `robots.txt`. `lang="pt-BR"` no documento.
+
+## Lighthouse
+
+`pnpm lighthouse` gera o build com mocks e mede início e detalhe (`/nfts/sage-nomad-009`) três vezes por perfil. As asserções usam a mediana, e `reports/lighthouse/<perfil>/` guarda o relatório HTML/JSON da execução mediana de cada página. Medição de 31/10, pela manhã:
+
+| Perfil  | Página  | Performance | Acessibilidade | Boas práticas | SEO |    FCP |   LCP |      TBT | CLS |
+| ------- | ------- | ----------: | -------------: | ------------: | --: | -----: | ----: | -------: | --: |
+| Mobile  | Início  |          49 |            100 |           100 | 100 |  1,9 s | 6,1 s | 1 785 ms |   0 |
+| Mobile  | Detalhe |          49 |            100 |           100 | 100 |  1,8 s | 6,0 s | 1 844 ms |   0 |
+| Desktop | Início  |          82 |            100 |           100 | 100 | 0,46 s | 1,5 s |   305 ms |   0 |
+| Desktop | Detalhe |          83 |            100 |           100 | 100 | 0,46 s | 1,4 s |   297 ms |   0 |
+
+Nas três execuções, a performance desktop variou de 82 a 90 (na rodada anterior, de 84 a 92); a mobile, de 47 a 51.
+
+**Justificativas.**
+
+- **Performance mobile.** O perfil mobile simula CPU 4× mais lenta e 4G lento. Antes do primeiro render, o navegador baixa e avalia o MSW (~470 KB, quase tudo biblioteca e dependências de cookies), que representa o backend e não existiria com uma API real. Esse custo aparece no LCP e no TBT. Por isso a asserção de performance mobile só avisa abaixo de 0,9.
+- **Comparação com 30/10.** A nota mobile caiu de cerca de 80, medida em 30/10, para cerca de 50, mas a causa é principalmente o ambiente: o build daquele dia, medido agora na mesma máquina, dá 51–57. A diferença restante (+0,4 s de FCP e +0,9 s de LCP antes da tela inicial) vem das fatias entregues depois (carrinho, pagamento e conta), parte delas no grafo inicial.
+- **Testado e descartado.** Declarar `"sideEffects"` no `package.json` permitiu ao bundler descartar a UI não usada pelos barrels das features, mas dividiu o JS inicial em 76 arquivos, e a cadeia de imports mais longa piorou o FCP (de 3,9 s para 4,2 s). Foi revertido.
+- **Gate do desktop.** A asserção de performance falha abaixo de 0,8: a mediana oscila entre 0,82 e 0,92 no mesmo build, e um limite que alterna com o ruído não detecta regressão.
