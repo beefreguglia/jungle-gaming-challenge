@@ -2,7 +2,7 @@
 
 Marketplace de NFTs em React e TypeScript: descoberta, carrinho, pagamento com carteira, confirmação de pedido e conta do colecionador, em desktop e mobile. Toda a API (REST e Socket.IO) é simulada com MSW, inclusive no build publicado.
 
-- **Demo:** _URL pública após o deploy_
+- **Demo:** <https://kurio-beefreguglia.vercel.app>
 - **Enunciado:** [`docs/DESAFIO.md`](docs/DESAFIO.md)
 - **Arquitetura, contratos e decisões:** [`ARCHITECTURE.md`](ARCHITECTURE.md)
 
