@@ -42,6 +42,8 @@ export async function mergeVisitorCart({ http, queryClient, cartIds, userId }: M
       headers: { [CART_ID_HEADER]: visitorCartId },
       schema: cartSchema,
     })
+    // A cart read sent before the merge would land later with the old (empty) cart
+    await queryClient.cancelQueries({ queryKey: userKey(userId, 'cart'), exact: true })
     queryClient.setQueryData(userKey(userId, 'cart'), cart)
     cartIds.clear()
   } catch {
