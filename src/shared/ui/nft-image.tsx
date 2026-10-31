@@ -9,6 +9,14 @@ function srcSetFor(url: string): string | undefined {
   return match ? `${match[1]}-480.webp 480w, ${url} 960w` : undefined
 }
 
+/** Fetches an artwork ahead of time (e.g. the next carousel slide), so it shows at once. */
+export function preloadNftImage(image: NftImageData, sizes: string): void {
+  const img = new Image()
+  img.sizes = sizes
+  img.srcset = srcSetFor(image.url) ?? ''
+  img.src = image.url
+}
+
 interface NftImageProps {
   image: NftImageData
   // Rendered width hint for the browser, e.g. "(min-width: 768px) 250px, 168px"
