@@ -7,7 +7,31 @@
     <!-- Title and description come from the routes (TanStack Router head) -->
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      Boot screen: painted with the HTML while the app and the mock network load (MSW is
+      ~470 KB), instead of a blank page. React replaces it on mount; inline styles, since the
+      app CSS and font may not be ready yet
+    -->
+    <div id="root">
+      <div
+        role="status"
+        style="
+          display: flex;
+          min-height: 100dvh;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          background: #140d0a;
+          color: #f5f1eb;
+          font-family: ui-monospace, monospace;
+        "
+      >
+        <span style="font-size: 20px; font-weight: 700; letter-spacing: 0.2em">KURIO</span>
+        <span style="font-size: 13px; color: #e89b55">Carregando o marketplace…</span>
+      </div>
+    </div>
+    <noscript>A Kurio precisa de JavaScript para funcionar.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
