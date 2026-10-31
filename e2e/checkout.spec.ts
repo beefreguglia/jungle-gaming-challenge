@@ -221,3 +221,35 @@ test.describe('retomada do pedido', () => {
     expect(new Set(keys).size).toBe(1)
   })
 })
+
+// Expiração durante o checkout preserva o contexto; logout apaga os dados privados
+test.describe('sessão no checkout', () => {
+  test('a sessão expira no pagamento e o novo login volta com o que foi digitado', async ({
+    page,
+  }) => {
+    await openCheckout(page)
+    const note = page.getByLabel('Observação do colecionador (opcional)')
+    await note.fill('Presente para a coleção da Kai')
+
+    await mock(page).expireSessions()
+    await page.getByRole('button', { name: 'Conectar carteira' }).click()
+    await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/)
+    await submitSignIn(page, USERS.nova.email)
+    await expect(page).toHaveURL('/checkout')
+    await expect(note).toHaveValue('Presente para a coleção da Kai')
+  })
+
+  test('o logout apaga o rascunho do pagamento', async ({ page }) => {
+    await openCheckout(page)
+    const note = page.getByLabel('Observação do colecionador (opcional)')
+    await note.fill('Rascunho privado')
+
+    await page.goto('/conta/perfil')
+    await page.getByRole('button', { name: 'Sair' }).first().click()
+    await expect(page.getByRole('button', { name: 'Sair' })).toHaveCount(0)
+    await page.goto('/checkout')
+    await submitSignIn(page, USERS.nova.email)
+    await expect(page).toHaveURL('/checkout')
+    await expect(page.getByLabel('Observação do colecionador (opcional)')).toHaveValue('')
+  })
+})

@@ -1,11 +1,31 @@
 import { toast } from 'sonner'
 
 import { mergeVisitorCart } from '@/features/cart'
+import { forgetCheckout } from '@/features/checkout'
+import type { SessionEndReason } from '@/features/session'
 
 import type { createAppRouter } from './router'
 import type { AppServices } from './services'
 
 type AppRouter = ReturnType<typeof createAppRouter>
+
+/**
+ * Checkout drafts (typed data, wallet connection) are private. They survive an expiry, so
+ * the same user resumes the purchase, and are dropped on logout or when someone else signs
+ * in on this tab.
+ */
+function createDraftJanitor() {
+  let expiredUserId: string | null = null
+  return (previous: string | null, next: string | null, reason: SessionEndReason | null) => {
+    if (previous && reason === 'expired' && next === null) {
+      expiredUserId = previous
+      return
+    }
+    if (previous) forgetCheckout(previous)
+    if (next && expiredUserId && expiredUserId !== next) forgetCheckout(expiredUserId)
+    if (next) expiredUserId = null
+  }
+}
 
 /**
  * Reacts to every change of *who* is using the app (login, logout, expiry, other tab):
@@ -17,13 +37,17 @@ export function bindSessionLifecycle(
   router: AppRouter,
 ): () => void {
   let userId = session.store.get()?.user.id ?? null
+  const forgetDrafts = createDraftJanitor()
 
   const unsubscribe = session.store.subscribe(() => {
     const { session: current, endedReason } = session.store.getSnapshot()
     const nextUserId = current?.user.id ?? null
     if (nextUserId === userId) return
+    const previousUserId = userId
     const signedIn = userId === null && nextUserId !== null
     userId = nextUserId
+
+    forgetDrafts(previousUserId, nextUserId, endedReason)
 
     // A visitor who signs in keeps what they put in the cart
     if (signedIn) void mergeVisitorCart({ http, queryClient, cartIds, userId: nextUserId })

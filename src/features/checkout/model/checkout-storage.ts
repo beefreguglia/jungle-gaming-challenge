@@ -42,10 +42,22 @@ function slot<T>(storage: SafeStorage, key: string, schema: z.ZodType<T>) {
 }
 
 export function createCheckoutStorage(userId: string, storage: SafeStorage = sessionArea) {
+  const draft = slot<CheckoutDraft>(storage, `kurio:checkout-draft:${userId}`, checkoutDraftSchema)
+  const attempt = slot<OrderAttempt>(storage, `kurio:order-attempt:${userId}`, orderAttemptSchema)
   return {
-    draft: slot<CheckoutDraft>(storage, `kurio:checkout-draft:${userId}`, checkoutDraftSchema),
-    attempt: slot<OrderAttempt>(storage, `kurio:order-attempt:${userId}`, orderAttemptSchema),
+    draft,
+    attempt,
+    // Logout or another user: the typed data and wallet connection are private
+    clear() {
+      draft.clear()
+      attempt.clear()
+    },
   }
+}
+
+/** Forgets a user's checkout draft and pending attempt (kept on expiry, for the resume). */
+export function forgetCheckout(userId: string): void {
+  createCheckoutStorage(userId).clear()
 }
 
 export type CheckoutStorage = ReturnType<typeof createCheckoutStorage>
