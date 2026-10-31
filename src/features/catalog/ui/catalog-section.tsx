@@ -5,7 +5,7 @@ import type { NftListParams } from '@/domain/nft'
 import { useNftList } from '../api/use-nft-list'
 import type { CatalogChange } from '../model/catalog-filters'
 import { resultsLabel } from '../model/catalog-labels'
-import { CatalogFilters } from './catalog-filters'
+import { CatalogFilters, ClearFiltersButton } from './catalog-filters'
 import { CatalogResults } from './catalog-results'
 import { SortSelect, ViewTabs } from './catalog-toolbar'
 import { FeaturedNft } from './featured-nft'
@@ -44,6 +44,7 @@ export function CatalogSection({ params, onChange, renderCardActions }: CatalogS
       <aside aria-label="Filtros do catálogo" className="hidden flex-col gap-6 lg:flex">
         <div className="rounded-sm bg-card p-6">
           <CatalogFilters params={params} facets={list.data?.facets} onChange={onChange} />
+          <ClearFiltersButton params={params} onChange={onChange} className="mt-8 w-full" />
         </div>
         <FeaturedNft />
       </aside>

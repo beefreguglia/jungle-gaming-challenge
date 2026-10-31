@@ -18,6 +18,32 @@ interface CatalogFiltersProps {
   onChange: CatalogChange
 }
 
+/**
+ * "Limpar filtros" is always rendered and only disabled without filters, so the controls
+ * around it never move when the first filter is picked or the last one removed.
+ */
+export function ClearFiltersButton({
+  params,
+  onChange,
+  size,
+  className,
+}: Pick<CatalogFiltersProps, 'params' | 'onChange'> & {
+  size?: 'default' | 'lg'
+  className?: string
+}) {
+  return (
+    <Button
+      variant="outline"
+      size={size}
+      disabled={!hasActiveFilters(params)}
+      className={className}
+      onClick={() => onChange(CLEARED_FILTERS)}
+    >
+      Limpar filtros
+    </Button>
+  )
+}
+
 /** Sidebar filters (desktop) and filter sheet content (mobile): Coleções, Faixa de preço, Rede. */
 export function CatalogFilters({ params, facets, onChange }: CatalogFiltersProps) {
   if (!facets) {
@@ -33,11 +59,6 @@ export function CatalogFilters({ params, facets, onChange }: CatalogFiltersProps
 
   return (
     <div className="flex flex-col gap-8">
-      {hasActiveFilters(params) && (
-        <Button variant="link" className="w-fit text-14" onClick={() => onChange(CLEARED_FILTERS)}>
-          Limpar filtros
-        </Button>
-      )}
       <FilterList
         title="Coleções"
         options={NFT_COLLECTIONS.map((value) => ({
