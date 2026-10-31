@@ -1,5 +1,5 @@
-export { PRIVATE_SCOPES, userKey, visitorKey } from './api/query-scope'
-export { createSessionApi, type SessionApi } from './api/session-api'
+export { userKey, visitorKey } from './api/query-scope'
+export { createSessionApi } from './api/session-api'
 export { SessionContext, useSession, useSessionManager } from './context'
 export { createSessionManager, type SessionManager } from './model/session-manager'
 export { isSessionRejection } from './model/session-rejection'
