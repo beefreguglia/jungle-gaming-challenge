@@ -2,6 +2,7 @@ import { expect, type Page } from '@playwright/test'
 
 /** Subset of `window.__kurioMock` (src/mocks/server.ts) the specs drive. */
 interface MockControl {
+  disconnectRealtime(): void
   expireSessions(): void
   realtimeUsers(): (string | null)[]
   setScenario(name: string): void
@@ -33,6 +34,9 @@ export async function openApp(page: Page, path = '/', scenario = 'instant'): Pro
 
 export function mock(page: Page) {
   return {
+    // Drops every Socket.IO connection; the client reconnects on its own and reconciles
+    disconnectRealtime: () =>
+      page.evaluate(() => (globalThis as MockWindow).__kurioMock?.disconnectRealtime()),
     expireSessions: () =>
       page.evaluate(() => (globalThis as MockWindow).__kurioMock?.expireSessions()),
     realtimeUsers: () =>
