@@ -3,9 +3,8 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import type { z } from 'zod'
 
-import { type Session, type SignInInput, signInInputSchema } from '@/domain/auth'
+import { type SignInInput, signInInputSchema } from '@/domain/auth'
 import { applyApiErrorToForm } from '@/shared/lib/form-errors'
-import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 import { ComingSoon } from '@/shared/ui/coming-soon'
 import { FormAlert } from '@/shared/ui/form-alert'
@@ -14,16 +13,11 @@ import { Input } from '@/shared/ui/input'
 import { PasswordInput } from '@/shared/ui/password-input'
 
 import { useSignIn } from '../api/auth-mutations'
-import { authFieldClass, authSubmitClass, type AuthVariant } from './auth-styles'
+import { authFieldClass, authSubmitClass } from './auth-styles'
 
 const FIELDS = ['email', 'password'] as const
 
-interface SignInFormProps {
-  variant: AuthVariant
-  onSuccess: (session: Session) => void
-}
-
-export function SignInForm({ variant, onSuccess }: SignInFormProps) {
+export function SignInForm({ onSuccess }: { onSuccess: () => void }) {
   const signIn = useSignIn()
   const [formError, setFormError] = useState<string | null>(null)
   const {
@@ -39,7 +33,8 @@ export function SignInForm({ variant, onSuccess }: SignInFormProps) {
   const submit = handleSubmit(async (input) => {
     setFormError(null)
     try {
-      onSuccess(await signIn.mutateAsync(input))
+      await signIn.mutateAsync(input)
+      onSuccess()
     } catch (error) {
       setFormError(applyApiErrorToForm(error, { setError, fields: FIELDS }))
     }
@@ -55,7 +50,7 @@ export function SignInForm({ variant, onSuccess }: SignInFormProps) {
             type="email"
             autoComplete="email"
             placeholder="contato@email.com"
-            className={authFieldClass[variant]}
+            className={authFieldClass}
           />
         )}
       </FormField>
@@ -66,21 +61,18 @@ export function SignInForm({ variant, onSuccess }: SignInFormProps) {
             {...register('password')}
             autoComplete="current-password"
             placeholder="Senha"
-            className={authFieldClass[variant]}
+            className={authFieldClass}
           />
         )}
       </FormField>
       <ComingSoon
         reason="Recuperação de senha em breve"
-        className={cn(
-          'self-end text-caption text-accent-foreground',
-          variant === 'page' && 'text-body md:text-caption',
-        )}
+        className="self-end text-body text-accent-foreground md:text-caption"
       >
         Esqueceu a senha?
       </ComingSoon>
       <FormAlert message={formError} />
-      <Button type="submit" disabled={signIn.isPending} className={authSubmitClass[variant]}>
+      <Button type="submit" variant="cta" disabled={signIn.isPending} className={authSubmitClass}>
         {signIn.isPending ? 'Entrando…' : 'Entrar'}
       </Button>
     </form>

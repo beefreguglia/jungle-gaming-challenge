@@ -1,11 +1,9 @@
-import { Link, useLocation } from '@tanstack/react-router'
-import { LogInIcon } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 
-import { AuthDialog } from '@/features/auth'
+import { useOpenAuth } from '@/features/auth'
 import { useSession } from '@/features/session'
 import { Button } from '@/shared/ui/button'
-
-import { isAuthPath } from './navigation'
+import { LogoutIcon } from '@/shared/ui/icons'
 
 function initials(name: string): string {
   return name
@@ -18,20 +16,14 @@ function initials(name: string): string {
 /** "Entrar" for visitors (opens the sign-in dialog over the current page), avatar for members. */
 export function AccountEntry() {
   const { session } = useSession()
-  const { pathname } = useLocation()
+  const openAuth = useOpenAuth()
 
   if (!session) {
-    // The auth pages already show the form
-    if (isAuthPath(pathname)) return null
     return (
-      <AuthDialog
-        trigger={
-          <Button size="sm" className="h-9 px-3 text-body">
-            <LogInIcon className="size-5" />
-            Entrar
-          </Button>
-        }
-      />
+      <Button size="sm" className="h-9 px-3 text-body" onClick={() => openAuth()}>
+        <LogoutIcon className="size-5" />
+        Entrar
+      </Button>
     )
   }
 

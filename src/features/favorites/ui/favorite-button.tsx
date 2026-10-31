@@ -1,6 +1,6 @@
-import { useLocation, useNavigate } from '@tanstack/react-router'
 import { HeartIcon } from 'lucide-react'
 
+import { useOpenAuth } from '@/features/auth'
 import { useSession } from '@/features/session'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
@@ -28,12 +28,12 @@ export function FavoriteButton({
   const { session } = useSession()
   const favorite = useIsFavorite(nftId)
   const toggle = useToggleFavorite()
-  const navigate = useNavigate()
-  const location = useLocation()
+  const openAuth = useOpenAuth()
 
   function onClick() {
     if (!session) {
-      void navigate({ to: '/login', search: { redirect: location.href } })
+      // Signing in keeps the visitor on this page, next to the art they wanted to save
+      openAuth()
       return
     }
     toggle.mutate({ nftId, favorite: !favorite })

@@ -5,7 +5,7 @@ import { useCartCount } from '@/features/cart'
 import { cn } from '@/shared/lib/utils'
 
 import { MobileTabBar } from './shell/mobile-tab-bar'
-import { hasMobileActionBar, hidesMobileTabBar, isAuthPath } from './shell/navigation'
+import { hasMobileActionBar, hidesMobileTabBar } from './shell/navigation'
 import { SiteFooter } from './shell/site-footer'
 import { SiteHeader } from './shell/site-header'
 
@@ -15,16 +15,14 @@ interface AppShellProps {
 
 /**
  * Page frame: bottom tab bar on mobile (the mobile frames have no header), header + footer
- * from md up. Auth pages are full screen on mobile, so they drop the tab bar and footer
- * there; the NFT detail swaps the tab bar for its buy bar. Main is the skip-link target;
+ * from md up. The NFT detail swaps the tab bar for its buy bar. Main is the skip-link target;
  * the footer leaves room for whichever bar is fixed at the bottom.
  */
 export function AppShell({ children }: AppShellProps) {
   const cartCount = useCartCount()
   const { pathname } = useLocation()
-  const fullScreenOnMobile = isAuthPath(pathname)
   const actionBar = hasMobileActionBar(pathname)
-  const tabBar = !fullScreenOnMobile && !hidesMobileTabBar(pathname)
+  const tabBar = !hidesMobileTabBar(pathname)
 
   return (
     <div className="flex min-h-dvh flex-col">
@@ -38,14 +36,7 @@ export function AppShell({ children }: AppShellProps) {
       <main id="main" tabIndex={-1} className="flex-1 outline-none">
         {children}
       </main>
-      <div
-        className={cn(
-          'pb-6 md:block md:pb-0',
-          tabBar && 'pb-24',
-          fullScreenOnMobile && 'hidden',
-          actionBar && 'pb-44',
-        )}
-      >
+      <div className={cn('pb-6 md:block md:pb-0', tabBar && 'pb-28', actionBar && 'pb-44')}>
         <SiteFooter />
       </div>
       {tabBar ? <MobileTabBar cartCount={cartCount} /> : null}

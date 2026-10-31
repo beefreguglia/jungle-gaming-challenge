@@ -37,7 +37,7 @@ export function useSignUp() {
   })
 }
 
-/** Leaves private pages first, so ending the session does not bounce the user to /login. */
+/** Leaves private pages first, so ending the session does not open the sign-in dialog. */
 export function useLogout() {
   const session = useSessionManager()
   const navigate = useNavigate()

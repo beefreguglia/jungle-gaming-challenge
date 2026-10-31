@@ -30,7 +30,7 @@ function createDraftJanitor() {
 /**
  * Reacts to every change of *who* is using the app (login, logout, expiry, other tab):
  * realtime reconnects with the new credentials, stale event ids are forgotten and route
- * guards re-run, which sends a user on a private page to /login with the page preserved.
+ * guards re-run, which opens the sign-in dialog for a user on a private page, with the page preserved.
  */
 export function bindSessionLifecycle(
   { session, realtime, realtimeSync, http, queryClient, cartIds }: AppServices,

@@ -1,10 +1,6 @@
 import { Tabs as TabsPrimitive } from 'radix-ui'
 
-import type { Session } from '@/domain/auth'
-import { cn } from '@/shared/lib/utils'
-
 import type { AuthMode } from '../model/auth-route'
-import type { AuthVariant } from './auth-styles'
 import { SignInForm } from './sign-in-form'
 import { SignUpForm } from './sign-up-form'
 import { SocialSignIn } from './social-sign-in'
@@ -18,25 +14,22 @@ const tabClass =
   'rounded-sm px-1 text-title font-medium text-foreground transition-colors hover:text-accent-foreground data-[state=active]:text-accent-foreground'
 
 interface AuthPanelProps {
-  variant: AuthVariant
   mode: AuthMode
   onModeChange: (mode: AuthMode) => void
-  onSuccess: (session: Session) => void
+  onSuccess: () => void
 }
 
 /**
- * "Entrar | Criar conta" switch, the form of the active mode and the social options. On
- * the auth pages the switch only shows from md up: the mobile frames use a heading and a
- * link at the bottom instead.
+ * "Entrar | Criar conta" switch, the form of the active mode and the social options. The
+ * switch and subtitle show from md up: the mobile frames use a heading and a link at the
+ * bottom instead.
  */
-export function AuthPanel({ variant, mode, onModeChange, onSuccess }: AuthPanelProps) {
-  const onPage = variant === 'page'
-
+export function AuthPanel({ mode, onModeChange, onSuccess }: AuthPanelProps) {
   return (
     <TabsPrimitive.Root value={mode} onValueChange={(value) => onModeChange(value as AuthMode)}>
       <TabsPrimitive.List
         aria-label="Acesso à conta"
-        className={cn('flex items-center justify-center gap-2', onPage && 'hidden md:flex')}
+        className="hidden items-center justify-center gap-2 md:flex"
       >
         <TabsPrimitive.Trigger value="sign-in" className={tabClass}>
           Entrar
@@ -46,25 +39,15 @@ export function AuthPanel({ variant, mode, onModeChange, onSuccess }: AuthPanelP
           Criar conta
         </TabsPrimitive.Trigger>
       </TabsPrimitive.List>
-      <p
-        className={cn(
-          'mx-auto mt-6 mb-8 max-w-[21.25rem] text-center text-13 leading-5',
-          onPage && 'hidden md:block',
-        )}
-      >
+      <p className="mx-auto mt-6 mb-8 hidden max-w-[21.25rem] text-center text-13 leading-5 md:block">
         {SUBTITLES[mode]}
       </p>
-      <div
-        className={cn(
-          'mx-auto flex flex-col gap-8',
-          onPage ? 'md:max-w-[21.25rem]' : 'max-w-[21.25rem]',
-        )}
-      >
+      <div className="mx-auto flex flex-col gap-8 md:max-w-[21.25rem]">
         <TabsPrimitive.Content value="sign-in" tabIndex={-1} className="outline-none">
-          <SignInForm variant={variant} onSuccess={onSuccess} />
+          <SignInForm onSuccess={onSuccess} />
         </TabsPrimitive.Content>
         <TabsPrimitive.Content value="sign-up" tabIndex={-1} className="outline-none">
-          <SignUpForm variant={variant} onSuccess={onSuccess} />
+          <SignUpForm onSuccess={onSuccess} />
         </TabsPrimitive.Content>
         <SocialSignIn />
       </div>

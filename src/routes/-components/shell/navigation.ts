@@ -11,13 +11,6 @@ export function isMarketPath(pathname: string): boolean {
   return MARKET_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 }
 
-// Visitor-only pages; the mobile frames show them full screen, without the app chrome
-export const AUTH_PATHS = ['/login', '/cadastro']
-
-export function isAuthPath(pathname: string): boolean {
-  return AUTH_PATHS.includes(pathname)
-}
-
 // Pages with their own fixed action bar on mobile (NFT detail "Comprar NFT"), which takes
 // the place of the tab bar, as in the mobile frame
 export function hasMobileActionBar(pathname: string): boolean {

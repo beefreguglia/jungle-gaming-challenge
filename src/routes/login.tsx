@@ -1,20 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
-import { AuthPage, authSearchSchema, leaveAuthPageWhenSignedIn } from '@/features/auth'
+import { AUTH_PARAM, authSearchSchema } from '@/features/auth'
 
+// Direct access to the sign-in "screen": it is a dialog, opened over the home page
 export const Route = createFileRoute('/login')({
   validateSearch: authSearchSchema,
-  beforeLoad: leaveAuthPageWhenSignedIn,
-  head: () => ({
-    meta: [
-      { title: 'Entrar · Kurio' },
-      { name: 'description', content: 'Entre na Kurio para comprar NFTs e gerenciar sua coleção.' },
-    ],
-  }),
-  component: LoginPage,
+  beforeLoad: ({ search }) => {
+    throw redirect({ to: '/', search: { auth: AUTH_PARAM['sign-in'], redirect: search.redirect } })
+  },
 })
-
-function LoginPage() {
-  const { redirect } = Route.useSearch()
-  return <AuthPage mode="sign-in" redirect={redirect} />
-}

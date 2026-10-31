@@ -1,23 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
-import { AuthPage, authSearchSchema, leaveAuthPageWhenSignedIn } from '@/features/auth'
+import { AUTH_PARAM, authSearchSchema } from '@/features/auth'
 
+// Direct access to the sign-up "screen": it is a dialog, opened over the home page
 export const Route = createFileRoute('/cadastro')({
   validateSearch: authSearchSchema,
-  beforeLoad: leaveAuthPageWhenSignedIn,
-  head: () => ({
-    meta: [
-      { title: 'Criar conta · Kurio' },
-      {
-        name: 'description',
-        content: 'Crie seu perfil de colecionador na Kurio e comece a montar sua coleção de NFTs.',
-      },
-    ],
-  }),
-  component: SignUpPage,
+  beforeLoad: ({ search }) => {
+    throw redirect({ to: '/', search: { auth: AUTH_PARAM['sign-up'], redirect: search.redirect } })
+  },
 })
-
-function SignUpPage() {
-  const { redirect } = Route.useSearch()
-  return <AuthPage mode="sign-up" redirect={redirect} />
-}
