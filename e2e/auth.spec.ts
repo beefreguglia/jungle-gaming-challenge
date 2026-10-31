@@ -5,8 +5,8 @@ import { mock, openApp, PASSWORD, signInAt, submitSignIn, USERS } from './suppor
 // E2E #3: cadastro, login, expiração de sessão, logout e troca de usuário
 test.describe('autenticação', () => {
   test('cadastro valida os campos, trata e-mail em uso e cria a conta', async ({ page }) => {
-    await openApp(page, '/cadastro')
-    const form = page.getByRole('form', { name: 'Criar conta' })
+    await openApp(page, '/?auth=cadastro')
+    const form = page.getByRole('dialog').getByRole('form', { name: 'Criar conta' })
     const username = form.getByLabel('Nome de usuário')
     const email = form.getByLabel('E-mail')
 
@@ -36,10 +36,25 @@ test.describe('autenticação', () => {
     await expect(page.getByRole('heading', { name: 'Minha conta' })).toBeVisible()
   })
 
+  test('/login e /cadastro abrem o dialog em cada modo, mantendo o redirect', async ({ page }) => {
+    await openApp(page, '/login?redirect=%2Fcarrinho')
+    await expect(page).toHaveURL('/?auth=entrar&redirect=%2Fcarrinho')
+    await expect(page.getByRole('dialog').getByRole('form', { name: 'Entrar' })).toBeVisible()
+
+    await page.goto('/cadastro')
+    await expect(page).toHaveURL('/?auth=cadastro')
+    await expect(page.getByRole('dialog').getByRole('form', { name: 'Criar conta' })).toBeVisible()
+  })
+
   test('login recusa senha errada e volta para a página protegida', async ({ page }) => {
     await openApp(page, '/conta/perfil')
-    await expect(page).toHaveURL('/login?redirect=%2Fconta%2Fperfil')
-    await expect(page.getByRole('heading', { name: 'Entrar' })).toBeAttached()
+    // A direct visit opens the dialog over the home page
+    await expect(page).toHaveURL('/?auth=entrar&redirect=%2Fconta%2Fperfil')
+    await expect(page.getByRole('dialog', { name: 'Entrar' })).toBeVisible()
+
+    // A refresh keeps the dialog and where to resume
+    await page.reload()
+    await expect(page.getByRole('dialog', { name: 'Entrar' })).toBeVisible()
 
     await submitSignIn(page, USERS.nova.email, 'senha-errada1')
     await expect(page.getByRole('alert')).toHaveText('E-mail ou senha incorretos')
@@ -55,13 +70,13 @@ test.describe('autenticação', () => {
 
     await mock(page).expireSessions()
     // The expiry is noticed by this navigation or by a background refetch (window focus,
-    // socket reconcile), whichever comes first; either way the user lands on the login
-    // with the page to come back to
+    // socket reconcile), whichever comes first; either way the sign-in dialog opens with
+    // the page to come back to
     await page
       .getByRole('link', { name: 'Carteiras', exact: true })
       .click({ timeout: 2_000 })
       .catch(() => {})
-    await expect(page).toHaveURL(/\/login\?redirect=%2Fconta%2F(carteiras|perfil)$/)
+    await expect(page).toHaveURL(/[?&]auth=entrar&redirect=%2Fconta%2F(carteiras|perfil)$/)
     const back = new URL(page.url()).searchParams.get('redirect') ?? ''
     await expect(page.getByText('Sua sessão expirou')).toBeVisible()
 
@@ -83,8 +98,9 @@ test.describe('autenticação', () => {
 
     // Another user signs in on the same tab, without a reload
     if (isMobile) {
+      // The private tab opens the dialog over the page the user is on
       await page.getByRole('link', { name: 'Minha conta' }).click()
-      await expect(page).toHaveURL('/login?redirect=%2Fconta')
+      await expect(page).toHaveURL('/?auth=entrar&redirect=%2Fconta')
     } else {
       await page.getByRole('button', { name: 'Entrar' }).click()
     }
@@ -97,12 +113,12 @@ test.describe('autenticação', () => {
     page,
     isMobile,
   }) => {
-    test.skip(isMobile, 'O dialog é a entrada do desktop; no mobile o login é tela cheia')
+    test.skip(isMobile, 'O botão "Entrar" fica no header, que é do desktop')
     await openApp(page, '/carrinho')
     const trigger = page.getByRole('button', { name: 'Entrar' })
 
     await trigger.click()
-    const dialog = page.getByRole('dialog', { name: 'Acesse sua conta' })
+    const dialog = page.getByRole('dialog')
     await expect(dialog).toBeVisible()
     for (let step = 0; step < 12; step += 1) await page.keyboard.press('Tab')
     await expect(dialog.locator(':focus')).toHaveCount(1)

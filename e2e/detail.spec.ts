@@ -89,7 +89,8 @@ test.describe('favoritos', () => {
   }) => {
     await openApp(page, '/nfts/golden-signal-160')
     await favoriteButton(page).click()
-    await expect(page).toHaveURL(/\/login\?redirect=/)
+    // The dialog opens over the same page, which stays once signed in
+    await expect(page).toHaveURL(/[?&]auth=entrar/)
     await submitSignIn(page, USERS.kai.email)
     await expect(page).toHaveURL('/nfts/golden-signal-160')
 

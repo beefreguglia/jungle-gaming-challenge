@@ -69,7 +69,9 @@ test.describe('conta', () => {
     await expect(page.getByText('Senha alterada')).toBeVisible()
 
     await page.getByRole('button', { name: 'Sair' }).first().click()
-    await page.goto('/login')
+    // Logout ends on the home page; opening the dialog before that would find the old session
+    await expect(page).toHaveURL('/')
+    await page.goto('/?auth=entrar')
     await submitSignIn(page, USERS.kai.email, 'novasenha9')
     await expect(page).toHaveURL('/')
   })

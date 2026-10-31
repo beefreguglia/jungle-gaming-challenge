@@ -58,7 +58,7 @@ export function mock(page: Page) {
   }
 }
 
-/** Fills the sign-in form on screen (page or dialog) and submits it. */
+/** Fills the sign-in form of the open auth dialog and submits it. */
 export async function submitSignIn(page: Page, email: string, password = PASSWORD) {
   const form = page.getByRole('form', { name: 'Entrar' })
   await form.getByLabel('E-mail').fill(email)
@@ -66,10 +66,10 @@ export async function submitSignIn(page: Page, email: string, password = PASSWOR
   await form.getByRole('button', { name: 'Entrar' }).click()
 }
 
-/** Signs in through /login, landing on `path` (a private page). */
+/** Opens a private page, signs in through the dialog it brings up and lands on `path`. */
 export async function signInAt(page: Page, path: string, email: string) {
   await openApp(page, path)
-  await expect(page).toHaveURL(/\/login\?redirect=/)
+  await expect(page).toHaveURL(/[?&]auth=entrar&redirect=/)
   await submitSignIn(page, email)
   await expect(page).toHaveURL(path)
 }

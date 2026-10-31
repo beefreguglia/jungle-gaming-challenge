@@ -209,3 +209,29 @@ test.describe('catálogo: carregamento e falhas', () => {
     await expect(catalog(page).getByRole('alert')).toHaveCount(0)
   })
 })
+
+test.describe('início: destaques e navegação', () => {
+  const highlight = (page: Page, index: number) =>
+    page.getByRole('button', { name: `Destaque ${index} de 3` })
+
+  test('os destaques avançam sozinhos', async ({ page }) => {
+    await openApp(page, '/')
+    await expect(highlight(page, 1)).toHaveAttribute('aria-current', 'true')
+    await expect(highlight(page, 2)).toHaveAttribute('aria-current', 'true', { timeout: 10_000 })
+  })
+
+  test('o header marca "Mercado" enquanto o catálogo está sob ele', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'No mobile a navegação é a barra inferior, sem "Mercado"')
+    await openApp(page, '/')
+    const nav = page.getByRole('navigation', { name: 'Principal' })
+    const market = nav.getByRole('link', { name: 'Mercado' })
+    await expect(market).not.toHaveAttribute('aria-current')
+
+    await market.click()
+    await expect(page.getByRole('banner')).toBeInViewport()
+    await expect(market).toHaveAttribute('aria-current', 'page')
+
+    await page.evaluate('scrollTo(0, 0)')
+    await expect(market).not.toHaveAttribute('aria-current')
+  })
+})

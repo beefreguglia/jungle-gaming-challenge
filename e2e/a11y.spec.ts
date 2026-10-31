@@ -44,11 +44,14 @@ test.describe('acessibilidade automática (axe, WCAG 2.1 AA)', () => {
     await expect(page.getByRole('region', { name: 'Resumo da carteira' })).toContainText('Total')
     await expectNoViolations(page, 'carrinho')
 
-    for (const path of ['/login', '/cadastro', '/nfts/nao-existe']) {
+    for (const path of ['/?auth=entrar', '/?auth=cadastro']) {
       await page.goto(path)
-      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      await expect(page.getByRole('dialog').getByRole('form')).toBeVisible()
       await expectNoViolations(page, path)
     }
+    await page.goto('/nfts/nao-existe')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expectNoViolations(page, '/nfts/nao-existe')
   })
 
   test('páginas privadas, do pagamento ao recibo', async ({ page }) => {

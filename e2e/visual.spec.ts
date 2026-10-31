@@ -31,6 +31,9 @@ async function snap(page: Page, name: string) {
 }
 
 test.describe('regressão visual', () => {
+  // The home highlights would otherwise advance mid-capture
+  test.use({ reducedMotion: 'reduce' })
+
   test('início', async ({ page }) => {
     await openApp(page, '/')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()

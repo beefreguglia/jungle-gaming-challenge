@@ -25,7 +25,7 @@ async function openCheckout(page: Page, scenario = 'instant') {
   await openApp(page, '/', scenario)
   await seedVisitorCart(page, [[EMERALD.nftId, EMERALD.editionId, 2]])
   await page.goto('/checkout')
-  await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/)
+  await expect(page).toHaveURL(/[?&]auth=entrar&redirect=%2Fcheckout/)
   await submitSignIn(page, USERS.nova.email)
   await expect(page).toHaveURL('/checkout')
   // 2 × 1.19 + network fee 0.016
@@ -48,7 +48,7 @@ test('compra completa do catálogo ao recibo, removendo os itens do carrinho', a
   await page.getByRole('button', { name: /^Comprar/i }).click()
   await expect(page).toHaveURL('/carrinho')
   await page.getByRole('link', { name: 'Conectar e finalizar' }).click()
-  await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/)
+  await expect(page).toHaveURL(/[?&]auth=entrar&redirect=%2Fcheckout/)
   await submitSignIn(page, USERS.nova.email)
   await expect(page).toHaveURL('/checkout')
 
@@ -233,7 +233,7 @@ test.describe('sessão no checkout', () => {
 
     await mock(page).expireSessions()
     await page.getByRole('button', { name: 'Conectar carteira' }).click()
-    await expect(page).toHaveURL(/\/login\?redirect=%2Fcheckout/)
+    await expect(page).toHaveURL(/[?&]auth=entrar&redirect=%2Fcheckout/)
     await submitSignIn(page, USERS.nova.email)
     await expect(page).toHaveURL('/checkout')
     await expect(note).toHaveValue('Presente para a coleção da Kai')
@@ -276,7 +276,7 @@ test('o próximo usuário não vê pedido, favoritos nem carrinho do anterior', 
   await page.goto('/conta/perfil')
   await page.getByRole('button', { name: 'Sair' }).first().click()
   await expect(page.getByRole('button', { name: 'Sair' })).toHaveCount(0)
-  await page.goto('/login')
+  await page.goto('/?auth=entrar')
   await submitSignIn(page, USERS.kai.email)
   await expect(page).toHaveURL('/')
 

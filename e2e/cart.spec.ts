@@ -75,7 +75,7 @@ test.describe('carrinho', () => {
     await page.reload()
     await expect(lines(page)).toHaveCount(3)
 
-    await page.goto('/login?redirect=/carrinho')
+    await page.goto('/carrinho?auth=entrar')
     await submitSignIn(page, USERS.kai.email)
     await expect(page).toHaveURL('/carrinho')
     await expect(lines(page)).toHaveCount(3)
