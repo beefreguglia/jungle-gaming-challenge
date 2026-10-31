@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { ProfileForm, PasswordForm, useProfile } from '@/features/account'
+import { isApiError } from '@/shared/api'
 import { Button } from '@/shared/ui/button'
 import { Skeleton } from '@/shared/ui/skeleton'
 
@@ -32,10 +33,16 @@ function ProfilePage() {
     )
   }
   if (profile.isError) {
+    // 403: retrying would not help, so it is said plainly and without the button
+    const forbidden = isApiError(profile.error) && profile.error.kind === 'forbidden'
     return (
       <div role="alert" className="flex flex-col items-start gap-3">
-        <p>Não foi possível carregar seu perfil.</p>
-        <Button onClick={() => void profile.refetch()}>Tentar novamente</Button>
+        <p>
+          {forbidden
+            ? 'Você não tem permissão para acessar este perfil.'
+            : 'Não foi possível carregar seu perfil.'}
+        </p>
+        {!forbidden && <Button onClick={() => void profile.refetch()}>Tentar novamente</Button>}
       </div>
     )
   }

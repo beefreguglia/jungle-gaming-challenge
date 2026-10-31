@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import { PASSWORD, signInAt, submitSignIn, USERS } from './support/app.ts'
+import { mock, PASSWORD, signInAt, submitSignIn, USERS } from './support/app.ts'
 
 // 1×1 transparent PNG, enough for the avatar upload
 const PNG = Buffer.from(
@@ -114,5 +114,18 @@ test.describe('conta', () => {
     await page.reload()
     await expect(page.getByRole('checkbox', { name: 'Igual à carteira principal' })).toBeChecked()
     await expect(primary.getByLabel('Código de indicação')).toHaveValue('KAI2026')
+  })
+
+  test('acesso não autorizado (403) é informado sem encerrar a sessão', async ({ page }) => {
+    await signInAt(page, '/conta/carteiras', USERS.nova.email)
+    await mock(page).setScenario('unauthorized')
+    await page.goto('/conta/perfil')
+    await expect(page.getByRole('alert')).toHaveText(
+      'Você não tem permissão para acessar este perfil.',
+    )
+    await expect(page.getByRole('button', { name: 'Tentar novamente' })).toHaveCount(0)
+    // 403 is not 401: the user stays signed in on the other pages
+    await page.getByRole('link', { name: 'Carteiras' }).first().click()
+    await expect(page.getByRole('region', { name: 'Carteira principal' })).toBeVisible()
   })
 })
