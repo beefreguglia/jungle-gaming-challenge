@@ -93,7 +93,7 @@ Use o painel ou `?scenario=` e siga os passos. Para voltar ao normal, selecione 
 | Resultado vazio                                | `empty`, ou busque um termo inexistente                                                                                                                                    |
 | Rota ou NFT inexistente                        | Acesse `/nfts/nao-existe` ou `/qualquer-coisa`                                                                                                                             |
 | Rollback de favorito                           | Entre, ative `favorite-fails` e toque no coração: ele volta ao estado anterior com um aviso                                                                                |
-| Conflito no cadastro                           | Em `/cadastro`, use `nova@kurio.art` ou o usuário `nova_sato`                                                                                                              |
+| Conflito no cadastro                           | Em "Criar conta" (`/?auth=cadastro`), use `nova@kurio.art` ou o usuário `nova_sato`                                                                                        |
 | Acesso não autorizado                          | Entre, ative `unauthorized` e abra `/conta/perfil`: a tela informa a falta de permissão                                                                                    |
 | Sessão expirada                                | `session-expires`, entre e aguarde 30 s navegando; ou `window.__kurioMock.expireSessions()`. O login devolve você à mesma página (no pagamento, com o que já foi digitado) |
 | Cupom inválido ou expirado                     | No carrinho, aplique `NOPE` ou `VERAO25`                                                                                                                                   |
@@ -152,7 +152,7 @@ Saídas: relatório HTML em `reports/playwright/`, e traces, vídeos e screensho
 | Perfil  | Performance | Acessibilidade | Boas práticas | SEO |
 | ------- | ----------: | -------------: | ------------: | --: |
 | Desktop |          98 |            100 |           100 | 100 |
-| Mobile  |       70–72 |            100 |           100 | 100 |
+| Mobile  |          73 |            100 |           100 | 100 |
 
 A performance mobile fica abaixo da meta porque o backend simulado (MSW, ~470 KB) é carregado e avaliado antes do primeiro render, sob CPU 4× mais lenta. LCP, CLS e TBT, versões, ambiente, condições e a análise completa estão em [ARCHITECTURE.md › Lighthouse](ARCHITECTURE.md#lighthouse).
 
