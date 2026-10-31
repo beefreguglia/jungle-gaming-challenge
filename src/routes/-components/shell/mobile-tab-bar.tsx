@@ -1,9 +1,10 @@
 import { Link, useLocation } from '@tanstack/react-router'
-import { HeartIcon, HouseIcon, ScanLineIcon, ShoppingCartIcon, UserRoundIcon } from 'lucide-react'
 import type * as React from 'react'
 
 import { cn } from '@/shared/lib/utils'
 import { ComingSoon } from '@/shared/ui/coming-soon'
+import { HeartIcon, HomeIcon, ScanIcon, ShopIcon, UserIcon } from '@/shared/ui/icons'
+import { NotchedBottomBar } from '@/shared/ui/notched-bottom-bar'
 
 interface TabProps {
   to: '/' | '/conta/favoritos' | '/carrinho' | '/conta'
@@ -19,11 +20,12 @@ function Tab({ to, label, icon: Icon, active, badge }: TabProps) {
       to={to}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'relative grid size-12 place-items-center rounded-xl text-subtle',
+        // Figma: text-secondary icons, text-accent for the current page
+        'relative grid size-12 place-items-center rounded-xl text-muted-foreground',
         active && 'text-accent-foreground',
       )}
     >
-      <Icon className={cn('size-6', active && 'fill-current')} />
+      <Icon />
       <span className="sr-only">
         {label}
         {badge ? `, ${badge} ${badge === 1 ? 'item' : 'itens'}` : ''}
@@ -31,7 +33,7 @@ function Tab({ to, label, icon: Icon, active, badge }: TabProps) {
       {badge ? (
         <span
           aria-hidden="true"
-          className="absolute top-1.5 right-1 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-tiny font-bold text-primary-foreground"
+          className="absolute top-1.5 right-1 grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-tiny font-bold text-primary-foreground tabular-nums"
         >
           {badge > 99 ? '99+' : badge}
         </span>
@@ -40,53 +42,52 @@ function Tab({ to, label, icon: Icon, active, badge }: TabProps) {
   )
 }
 
-/** Bottom navigation of the mobile frames (below md), with the raised center action. */
+/**
+ * Bottom navigation of the mobile frames (below md): Início and Favoritos, the raised QR
+ * action in the notch, Carrinho and Conta.
+ */
 export function MobileTabBar({ cartCount }: { cartCount: number }) {
   const { pathname } = useLocation()
 
   return (
-    <nav
-      aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-40 rounded-t-4xl bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
-    >
-      <ul className="mx-auto flex h-18 max-w-md items-center justify-around px-4">
-        <li>
-          <Tab to="/" label="Início" icon={HouseIcon} active={pathname === '/'} />
-        </li>
-        <li>
-          <Tab
-            to="/conta/favoritos"
-            label="Favoritos"
-            icon={HeartIcon}
-            active={pathname === '/conta/favoritos'}
-          />
-        </li>
-        <li className="-mt-10">
-          <ComingSoon
-            reason="Leitura de QR code em breve"
-            className="grid size-16 place-items-center rounded-full border-4 border-background bg-linear-to-b from-accent-foreground to-primary text-primary-foreground opacity-100"
-          >
-            <ScanLineIcon className="size-7" aria-hidden="true" />
-          </ComingSoon>
-        </li>
-        <li>
-          <Tab
-            to="/carrinho"
-            label="Carrinho"
-            icon={ShoppingCartIcon}
-            active={pathname === '/carrinho'}
-            badge={cartCount}
-          />
-        </li>
-        <li>
-          <Tab
-            to="/conta"
-            label="Minha conta"
-            icon={UserRoundIcon}
-            active={pathname.startsWith('/conta') && pathname !== '/conta/favoritos'}
-          />
-        </li>
-      </ul>
-    </nav>
+    <NotchedBottomBar
+      label="Principal"
+      className="md:hidden"
+      start={[
+        <Tab key="home" to="/" label="Início" icon={HomeIcon} active={pathname === '/'} />,
+        <Tab
+          key="favorites"
+          to="/conta/favoritos"
+          label="Favoritos"
+          icon={HeartIcon}
+          active={pathname === '/conta/favoritos'}
+        />,
+      ]}
+      action={
+        <ComingSoon
+          reason="Leitura de QR code em breve"
+          className="grid size-full place-items-center rounded-full bg-linear-to-b from-primary/40 to-primary text-foreground opacity-100 shadow-[0_8px_20px_-4px_rgb(210_138_76/0.55)]"
+        >
+          <ScanIcon />
+        </ComingSoon>
+      }
+      end={[
+        <Tab
+          key="cart"
+          to="/carrinho"
+          label="Carrinho"
+          icon={ShopIcon}
+          active={pathname === '/carrinho'}
+          badge={cartCount}
+        />,
+        <Tab
+          key="account"
+          to="/conta"
+          label="Minha conta"
+          icon={UserIcon}
+          active={pathname.startsWith('/conta') && pathname !== '/conta/favoritos'}
+        />,
+      ]}
+    />
   )
 }
