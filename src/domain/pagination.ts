@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const DEFAULT_PAGE_SIZE = 12
+export const DEFAULT_PAGE_SIZE = 9
 
 export function paginatedSchema<T extends z.ZodType>(item: T) {
   return z.object({

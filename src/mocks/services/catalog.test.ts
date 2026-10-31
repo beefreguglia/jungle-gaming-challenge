@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { nftListParamsSchema, nftListResponseSchema } from '@/domain/nft'
+import { DEFAULT_PAGE_SIZE } from '@/domain/pagination'
 
 import { createTestBackend } from '../testing'
 import { findNftRecord, queryCatalog, relatedNfts, updateEdition } from './catalog'
@@ -30,9 +31,9 @@ describe('queryCatalog', () => {
   it('paginates', () => {
     const { backend } = createTestBackend()
     const page2 = queryCatalog(backend, params({ page: 2 }))
-    expect(page2.items).toHaveLength(12)
+    expect(page2.items).toHaveLength(DEFAULT_PAGE_SIZE)
     expect(page2.page).toBe(2)
-    expect(page2.totalPages).toBe(Math.ceil(page2.total / 12))
+    expect(page2.totalPages).toBe(Math.ceil(page2.total / DEFAULT_PAGE_SIZE))
   })
 
   it('combines filters', () => {

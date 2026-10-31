@@ -37,8 +37,15 @@ export function CatalogResults({
   if (error && !data) {
     return <CatalogError error={error} onRetry={() => void list.refetch()} retrying={isFetching} />
   }
-  if (isPending || !data)
-    return <NftGridSkeleton count={params.pageSize > 6 ? 6 : params.pageSize} />
+  // A full page of placeholders plus the pagination row, so nothing below moves on arrival
+  if (isPending || !data) {
+    return (
+      <div className="flex flex-col gap-10 md:gap-16">
+        <NftGridSkeleton count={params.pageSize} />
+        <div aria-hidden="true" className="h-[2.1875rem]" />
+      </div>
+    )
+  }
   if (data.items.length === 0) {
     return (
       <CatalogEmpty filtered={hasActiveFilters(params)} onClear={() => onChange(CLEARED_FILTERS)} />

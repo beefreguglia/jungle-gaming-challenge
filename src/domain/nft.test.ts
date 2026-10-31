@@ -14,6 +14,7 @@ import {
   nftSchema,
   updateNftListParams,
 } from './nft'
+import { DEFAULT_PAGE_SIZE } from './pagination'
 
 function edition(overrides: Partial<NftEdition> = {}): NftEdition {
   return { id: 'e1', name: 'Standard', price: '1', supply: 10, available: 5, ...overrides }
@@ -90,7 +91,12 @@ describe('availability', () => {
 
 describe('nftListParamsSchema', () => {
   it('fills defaults for an empty URL', () => {
-    expect(defaultNftListParams).toEqual({ view: 'all', sort: 'recent', page: 1, pageSize: 12 })
+    expect(defaultNftListParams).toEqual({
+      view: 'all',
+      sort: 'recent',
+      page: 1,
+      pageSize: DEFAULT_PAGE_SIZE,
+    })
   })
 
   it('falls back field by field on invalid URL values', () => {
