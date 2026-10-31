@@ -55,7 +55,7 @@ function MobileBanner(carousel: CarouselState) {
   // "Hero banner": 48 px radius, the orange circles mask over the page color (ink).
   // The mask keeps its proportions (cover), so the circles never stretch on other phones
   return (
-    <div className="relative flex flex-col items-center gap-4 overflow-hidden rounded-[3rem] bg-background bg-[url(/images/home/banner-surface.png)] bg-cover bg-center bg-no-repeat p-4 md:hidden">
+    <div className="relative flex flex-col items-center gap-4 overflow-hidden rounded-[3rem] bg-background bg-[url(/images/home/banner-surface.webp)] bg-cover bg-center bg-no-repeat p-4 md:hidden">
       <div className="flex w-full items-center gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-1.5">
           <p className="text-12 font-medium">Bem-vindo à Kurio</p>
