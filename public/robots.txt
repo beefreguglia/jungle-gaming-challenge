@@ -1,2 +1,6 @@
 User-agent: *
 Allow: /
+# Private pages: checkout, account and orders need a session
+Disallow: /checkout
+Disallow: /conta
+Disallow: /pedidos

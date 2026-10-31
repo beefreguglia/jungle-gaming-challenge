@@ -15,16 +15,22 @@ export const Route = createFileRoute('/_authenticated/pedidos/$orderId')({
       if (order.status !== 'confirmed') {
         throw redirect({ to: '/checkout', search: { pedido: order.id }, replace: true })
       }
+      return { found: true }
     } catch (error) {
       if (isApiError(error) && error.kind === 'not_found') throw notFound()
       throw error
     }
   },
-  head: () => ({
-    meta: [
-      { title: 'Pedido confirmado · Kurio' },
-      { name: 'description', content: 'Recibo da sua compra de NFTs na Kurio.' },
-    ],
+  head: ({ loaderData }) => ({
+    meta: loaderData
+      ? [
+          { title: 'Pedido confirmado · Kurio' },
+          { name: 'description', content: 'Recibo da sua compra de NFTs na Kurio.' },
+        ]
+      : [
+          { title: 'Pedido não encontrado · Kurio' },
+          { name: 'description', content: 'Este pedido não existe ou pertence a outra conta.' },
+        ],
   }),
   pendingComponent: OrderReceiptSkeleton,
   pendingMs: 150,

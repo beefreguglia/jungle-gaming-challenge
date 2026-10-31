@@ -11,4 +11,6 @@ export const Route = createFileRoute('/_authenticated')({
       throw redirect({ to: '/login', search: { redirect: location.href } })
     }
   },
+  // Private pages (checkout, account, orders) stay out of search engines
+  head: () => ({ meta: [{ name: 'robots', content: 'noindex' }] }),
 })

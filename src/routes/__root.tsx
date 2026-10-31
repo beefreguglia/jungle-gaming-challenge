@@ -22,15 +22,23 @@ const RouterDevtools = import.meta.env.DEV
   : () => null
 
 export const Route = createRootRouteWithContext<RouterContext>()({
-  // Defaults for every page; routes override title and description in their own `head`
-  head: () => ({
-    meta: [
-      { title: 'Kurio · Marketplace de NFTs' },
-      {
-        name: 'description',
-        content: 'Marketplace de NFTs: descubra, colecione e compre edições digitais verificadas.',
-      },
-    ],
+  // Defaults for every page; routes override title and description in their own `head`.
+  // A URL that matches no route leaves only the root match (even "/" has its index route):
+  // that page gets its own title
+  head: ({ matches }) => ({
+    meta: matches.every((match) => match.routeId === '__root__')
+      ? [
+          { title: 'Página não encontrada · Kurio' },
+          { name: 'description', content: 'Este endereço não existe na Kurio.' },
+        ]
+      : [
+          { title: 'Kurio · Marketplace de NFTs' },
+          {
+            name: 'description',
+            content:
+              'Marketplace de NFTs: descubra, colecione e compre edições digitais verificadas.',
+          },
+        ],
   }),
   component: RootComponent,
 })
