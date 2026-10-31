@@ -141,7 +141,7 @@ export function OrderSummary({
           ) : (
             <>
               Tem um código promocional?{' '}
-              <Link to="/carrinho" className="text-accent-foreground hover:underline">
+              <Link to="/carrinho" className="text-accent-foreground underline underline-offset-2">
                 Aplique no carrinho
               </Link>
             </>
