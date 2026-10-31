@@ -32,40 +32,48 @@ test.describe('autenticação', () => {
     await expect(page.getByText('Conta criada. Boas-vindas, colecionador_1!')).toBeVisible()
 
     // The session survives a refresh and opens private pages
-    await page.goto('/conta')
+    await page.goto('/conta/perfil')
     await expect(page.getByRole('heading', { name: 'Minha conta' })).toBeVisible()
   })
 
   test('login recusa senha errada e volta para a página protegida', async ({ page }) => {
-    await openApp(page, '/conta')
-    await expect(page).toHaveURL('/login?redirect=%2Fconta')
+    await openApp(page, '/conta/perfil')
+    await expect(page).toHaveURL('/login?redirect=%2Fconta%2Fperfil')
     await expect(page.getByRole('heading', { name: 'Entrar' })).toBeAttached()
 
     await submitSignIn(page, USERS.nova.email, 'senha-errada1')
     await expect(page.getByRole('alert')).toHaveText('E-mail ou senha incorretos')
 
     await submitSignIn(page, USERS.nova.email, PASSWORD)
-    await expect(page).toHaveURL('/conta')
+    await expect(page).toHaveURL('/conta/perfil')
     await expect(page.getByText(`Olá de novo, ${USERS.nova.name}!`)).toBeVisible()
   })
 
   test('sessão expirada leva ao login e retoma a página depois', async ({ page }) => {
-    await signInAt(page, '/conta', USERS.nova.email)
+    await signInAt(page, '/conta/perfil', USERS.nova.email)
+    await expect.poll(() => mock(page).realtimeUsers()).toContain(USERS.nova.id)
 
     await mock(page).expireSessions()
-    await page.reload()
-    await expect(page).toHaveURL('/login?redirect=%2Fconta')
+    // The expiry is noticed by this navigation or by a background refetch (window focus,
+    // socket reconcile), whichever comes first; either way the user lands on the login
+    // with the page to come back to
+    await page
+      .getByRole('link', { name: 'Carteiras', exact: true })
+      .click({ timeout: 2_000 })
+      .catch(() => {})
+    await expect(page).toHaveURL(/\/login\?redirect=%2Fconta%2F(carteiras|perfil)$/)
+    const back = new URL(page.url()).searchParams.get('redirect') ?? ''
     await expect(page.getByText('Sua sessão expirou')).toBeVisible()
 
     await submitSignIn(page, USERS.nova.email)
-    await expect(page).toHaveURL('/conta')
+    await expect(page).toHaveURL(back)
   })
 
   test('logout limpa a sessão e a troca de usuário reconecta o socket', async ({
     page,
     isMobile,
   }) => {
-    await signInAt(page, '/conta', USERS.nova.email)
+    await signInAt(page, '/conta/perfil', USERS.nova.email)
     await expect.poll(() => mock(page).realtimeUsers()).toEqual([USERS.nova.id])
 
     await page.getByRole('button', { name: 'Sair' }).click()

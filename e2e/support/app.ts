@@ -69,3 +69,24 @@ export async function signInAt(page: Page, path: string, email: string) {
   await submitSignIn(page, email)
   await expect(page).toHaveURL(path)
 }
+
+type CartSeed = [nftId: string, editionId: string, quantity: number][]
+
+/**
+ * Builds a visitor cart through the mock API and stores its id like the app does, so the
+ * next page load finds it. Setup only: adding from the UI is covered by the detail specs.
+ */
+export async function seedVisitorCart(page: Page, items: CartSeed): Promise<void> {
+  await page.evaluate(async (lines) => {
+    let cartId: string | null = null
+    for (const [nftId, editionId, quantity] of lines) {
+      const response = await fetch('/api/cart/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...(cartId ? { 'X-Cart-Id': cartId } : {}) },
+        body: JSON.stringify({ nftId, editionId, quantity }),
+      })
+      cartId = ((await response.json()) as { id: string }).id
+    }
+    if (cartId) localStorage.setItem('kurio:cart-id', cartId)
+  }, items)
+}

@@ -66,6 +66,13 @@ test.describe('detalhe do NFT', () => {
     await openApp(page, '/nfts/golden-beat-207')
     await buyButton(page).click()
     await expect(page).toHaveURL('/carrinho')
+    const items = page.getByRole('list', { name: 'Itens do carrinho' }).getByRole('listitem')
+    await expect(items).toHaveCount(1)
+    await expect(items).toContainText('Golden Beat #207')
+
+    // The badge: header on desktop; on mobile the tab bar, which the cart page swaps for
+    // its summary, so it is checked back on the home page
+    if (isMobile) await page.goto('/')
     const cartLink = isMobile
       ? page.getByRole('link', { name: 'Carrinho, 1 item' })
       : page.getByRole('link', { name: 'Carrinho com 1 item' })
