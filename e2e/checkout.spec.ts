@@ -253,3 +253,39 @@ test.describe('sessão no checkout', () => {
     await expect(page.getByLabel('Observação do colecionador (opcional)')).toHaveValue('')
   })
 })
+
+// Isolamento: nada do usuário anterior aparece para o próximo na mesma aba
+test('o próximo usuário não vê pedido, favoritos nem carrinho do anterior', async ({ page }) => {
+  await openCheckout(page)
+  await connectWallet(page)
+  await confirmButton(page).click()
+  await expect(receiptHeading(page)).toBeVisible()
+  const receiptUrl = new URL(page.url()).pathname
+
+  // Nova's seeded favorites, and a new cart line after the purchase
+  await page.goto('/conta/favoritos')
+  await expect(
+    page
+      .getByRole('list', { name: 'Resultados' })
+      .getByRole('heading', { name: 'Sage Nomad #009' }),
+  ).toBeVisible()
+  await page.goto('/nfts/sage-nomad-009')
+  await page.getByRole('button', { name: /^Comprar/i }).click()
+  await expect(page.getByRole('list', { name: 'Itens do carrinho' })).toBeVisible()
+
+  await page.goto('/conta/perfil')
+  await page.getByRole('button', { name: 'Sair' }).first().click()
+  await expect(page.getByRole('button', { name: 'Sair' })).toHaveCount(0)
+  await page.goto('/login')
+  await submitSignIn(page, USERS.kai.email)
+  await expect(page).toHaveURL('/')
+
+  await page.goto(receiptUrl)
+  await expect(page.getByRole('heading', { name: 'Pedido não encontrado' })).toBeVisible()
+  await page.goto('/conta/favoritos')
+  await expect(
+    page.getByText('Você ainda não favoritou nenhum NFT.', { exact: false }),
+  ).toBeVisible()
+  await page.goto('/carrinho')
+  await expect(page.getByText('Seu carrinho está vazio')).toBeVisible()
+})
