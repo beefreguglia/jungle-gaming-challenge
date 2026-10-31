@@ -11,6 +11,8 @@ export interface RequestOptions<T> {
   params?: Record<string, unknown>
   headers?: Record<string, string>
   signal?: AbortSignal
+  // Overrides the client timeout for this request (e.g. give up on a slow order sooner)
+  timeoutMs?: number
   // Validates the response body; the result type is inferred from the schema
   schema?: ZodType<T>
 }
@@ -97,6 +99,7 @@ export function createHttpClient({
     params,
     headers,
     signal,
+    timeoutMs: requestTimeoutMs,
     schema,
   }: RequestConfig<T>) {
     // Explicit per-request headers win over the dynamic ones
@@ -109,6 +112,7 @@ export function createHttpClient({
         params,
         headers: finalHeaders,
         signal,
+        timeout: requestTimeoutMs,
       })
       return parseBody(response.data, schema)
     } catch (error) {
