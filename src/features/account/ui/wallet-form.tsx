@@ -19,7 +19,7 @@ import { EnsInput } from '@/shared/ui/ens-input'
 import { FormAlert } from '@/shared/ui/form-alert'
 import { type FieldControlProps, FormField } from '@/shared/ui/form-field'
 import { Input } from '@/shared/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/select'
+import { OptionSelect } from '@/shared/ui/option-select'
 
 type FormValues = z.input<typeof walletInputSchema>
 
@@ -64,25 +64,22 @@ interface EnumSelectProps {
   options: { value: string; label: string }[]
 }
 
-/** Radix Select bound to the form; the trigger gets the FormField wiring (id, aria-*). */
+/** Option select bound to the form through a Controller. */
 function EnumSelect({ name, control, fieldProps, placeholder, options }: EnumSelectProps) {
   return (
     <Controller
       control={control}
       name={name}
       render={({ field }) => (
-        <Select value={field.value || undefined} onValueChange={field.onChange}>
-          <SelectTrigger {...fieldProps} ref={field.ref} onBlur={field.onBlur} className="w-full">
-            <SelectValue placeholder={placeholder} />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <OptionSelect
+          fieldProps={fieldProps}
+          value={field.value}
+          onValueChange={field.onChange}
+          onBlur={field.onBlur}
+          ref={field.ref}
+          placeholder={placeholder}
+          options={options}
+        />
       )}
     />
   )

@@ -1,55 +1,15 @@
-import { Link, useRouter } from '@tanstack/react-router'
-import { ChevronLeftIcon, ShoppingCartIcon } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { ShoppingCartIcon } from 'lucide-react'
 import type * as React from 'react'
 
 import { Button } from '@/shared/ui/button'
+import { MarketBreadcrumb, MobilePageHeader } from '@/shared/ui/page-header'
 import { Skeleton } from '@/shared/ui/skeleton'
 
 import { useCart, useCartKey } from '../api/cart-queries'
 import { CartLineRow } from './cart-line-row'
 import { CartNotices } from './cart-notices'
 import { CartSummary } from './cart-summary'
-
-function MobileHeader() {
-  const router = useRouter()
-  return (
-    <div className="grid grid-cols-[2.25rem_1fr_2.25rem] items-center md:hidden">
-      <button
-        type="button"
-        aria-label="Voltar"
-        onClick={() =>
-          router.history.canGoBack() ? router.history.back() : void router.navigate({ to: '/' })
-        }
-        className="grid size-9 place-items-center rounded-full bg-secondary hover:text-accent-foreground"
-      >
-        <ChevronLeftIcon className="size-5" aria-hidden="true" />
-      </button>
-      <h1 className="text-center text-18 font-bold">Carrinho de NFTs</h1>
-    </div>
-  )
-}
-
-function Breadcrumb() {
-  return (
-    <nav aria-label="Trilha de navegação" className="hidden text-14 font-bold md:block">
-      <ol className="flex gap-1">
-        <li>
-          <Link to="/" className="hover:text-accent-foreground">
-            Início
-          </Link>
-          <span aria-hidden="true"> /</span>
-        </li>
-        <li>
-          <Link to="/" hash="catalogo" className="hover:text-accent-foreground">
-            Mercado
-          </Link>
-          <span aria-hidden="true"> /</span>
-        </li>
-        <li aria-current="page">Carrinho</li>
-      </ol>
-    </nav>
-  )
-}
 
 function EmptyCart() {
   return (
@@ -128,10 +88,10 @@ export function CartPage({ related }: { related?: React.ReactNode }) {
 
   return (
     <div className="mx-auto flex max-w-page flex-col gap-6 px-7 pt-8 md:gap-7 md:px-4 xl:px-0">
-      <MobileHeader />
+      <MobilePageHeader title="Carrinho de NFTs" />
       {/* Desktop: the Figma shows only the breadcrumb, so the page title is for screen readers */}
       <h1 className="hidden md:sr-only md:block">Carrinho de NFTs</h1>
-      <Breadcrumb />
+      <MarketBreadcrumb current="Carrinho" />
       {body}
       {related}
     </div>

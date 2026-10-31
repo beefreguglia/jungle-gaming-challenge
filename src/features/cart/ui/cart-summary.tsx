@@ -5,35 +5,10 @@ import { formatEth } from '@/domain/money'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/button'
 import { Skeleton } from '@/shared/ui/skeleton'
+import { SummaryRow } from '@/shared/ui/summary-row'
 
 import { useCartQuote } from '../api/cart-quote'
 import { CouponForm } from './coupon-form'
-
-function Row({
-  term,
-  children,
-  strong,
-}: {
-  term: string
-  children: React.ReactNode
-  strong?: boolean
-}) {
-  return (
-    <div
-      className={cn(
-        'flex items-baseline justify-between gap-4',
-        strong && 'border-t border-border pt-4',
-      )}
-    >
-      <dt className={cn('text-14 md:text-14', strong && 'text-16 font-bold')}>{term}</dt>
-      <dd
-        className={cn('text-15 md:text-16', strong && 'text-18 font-bold text-accent-foreground')}
-      >
-        {children}
-      </dd>
-    </div>
-  )
-}
 
 function Totals({ cart }: { cart: Cart }) {
   const quote = useCartQuote(cart)
@@ -75,17 +50,17 @@ function Totals({ cart }: { cart: Cart }) {
         quote.isPlaceholderData && 'opacity-60',
       )}
     >
-      <Row term="Subtotal">{formatEth(subtotal)}</Row>
-      <Row term="Desconto do lançamento">(-) {formatEth(discount)}</Row>
-      <Row term="Taxa de rede">
+      <SummaryRow term="Subtotal">{formatEth(subtotal)}</SummaryRow>
+      <SummaryRow term="Desconto do lançamento">(-) {formatEth(discount)}</SummaryRow>
+      <SummaryRow term="Taxa de rede">
         <span className="flex flex-col items-end">
           {formatEth(networkFee)}
           <span className="text-11 text-accent-foreground">Taxa estimada</span>
         </span>
-      </Row>
-      <Row term="Total" strong>
+      </SummaryRow>
+      <SummaryRow term="Total" strong>
         {formatEth(total)}
-      </Row>
+      </SummaryRow>
     </dl>
   )
 }
