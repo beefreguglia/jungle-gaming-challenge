@@ -1,0 +1,9 @@
+/*
+ * Out of visual comparisons: the mock scenario switcher (dev tool), transient toasts and the
+ * fixed mobile tab bar, which a full-page capture pins at an arbitrary height
+ */
+button[aria-label='Cenários'],
+[data-sonner-toaster],
+nav[aria-label='Principal'].fixed {
+  visibility: hidden !important;
+}

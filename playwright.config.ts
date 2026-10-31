@@ -22,7 +22,11 @@ export default defineConfig({
     timezoneId: 'America/Sao_Paulo',
   },
   expect: {
-    toHaveScreenshot: { animations: 'disabled', maxDiffPixelRatio: 0.01 },
+    toHaveScreenshot: {
+      animations: 'disabled',
+      maxDiffPixelRatio: 0.01,
+      stylePath: './e2e/support/screenshot.css',
+    },
   },
   projects: [
     {
