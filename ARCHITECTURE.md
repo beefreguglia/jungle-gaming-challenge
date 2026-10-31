@@ -1,6 +1,8 @@
 # Arquitetura
 
-> Documento vivo. As seções de contratos REST, eventos, sessão, carrinho, cache e reconciliação REST × Socket.IO serão adicionadas conforme a implementação.
+Como o projeto está organizado, os contratos que ele usa e as decisões tomadas. Setup, credenciais, cenários e comandos estão no [README](README.md); o enunciado, em [docs/DESAFIO.md](docs/DESAFIO.md).
+
+**Mapa:** [Camadas](#camadas) · [Contratos REST](#contratos-rest) · [Eventos Socket.IO](#eventos-socketio) · [Backend simulado](#backend-simulado-msw) · [Sessão](#sessão) · [Cache, retries e sincronização](#cache-retries-e-sincronização) · [Reconciliação REST × Socket.IO](#reconciliação-rest--socketio) · [Desvios do Figma](#design-system-e-desvios-do-figma) · [Carrinho](#carrinho) · [Checkout e pedido](#checkout-e-pedido) · [Decisões de UX](#decisões-de-ux) · [Limitações](#limitações) · [Lighthouse](#lighthouse)
 
 ## Camadas
 
@@ -8,18 +10,18 @@
 src/
 ├── app/        Composition root: providers, router, query client, bootstrap dos mocks
 ├── routes/     Rotas do TanStack Router (file-based) — finas, só compõem features
-├── features/   Fatias por caso de uso (catalog, nft-detail, cart, checkout, auth, profile, wallets…)
+├── features/   Fatias por caso de uso: catalog, nft-detail, favorites, cart, checkout,
+│   │           auth, session, account
 │   └── <feature>/
 │       ├── api/         Query/mutation options e hooks (TanStack Query)
-│       ├── components/  Componentes da feature
-│       ├── model/       Estado local, schemas de formulário, regras específicas
+│       ├── ui/          Componentes da feature
+│       ├── model/       Estado local e regras específicas (funções puras, testadas)
 │       └── index.ts     API pública da feature (único ponto de import externo)
 ├── domain/     Tipos, contratos (zod) e regras puras (dinheiro em ETH, cotação, versões de eventos)
 ├── shared/
 │   ├── api/    Adaptadores de transporte: cliente Axios e cliente Socket.IO
 │   ├── ui/     Componentes shadcn/ui adaptados ao design
 │   ├── lib/    Utilitários puros
-│   ├── hooks/  Hooks genéricos, sem regra de negócio
 │   └── config/ Leitura tipada do ambiente
 └── mocks/      MSW: handlers REST/WS, fixtures, "banco" em memória e cenários
 ```
@@ -93,34 +95,34 @@ Convenções:
 - O carrinho do visitante é identificado por `X-Cart-Id`.
 - Recursos que mudam em tempo real (NFT, pedido) carregam `version`, um número monotônico.
 
-| Recurso   | Método e caminho                 | Entrada                                      | Resposta                          | Erros relevantes                                                     |
-| --------- | -------------------------------- | -------------------------------------------- | --------------------------------- | -------------------------------------------------------------------- |
-| Sessão    | `POST /auth/sign-up`             | `signUpInputSchema`                          | `201 Session`                     | 409 `email_taken` / `username_taken`, 422                            |
-|           | `POST /auth/sign-in`             | `signInInputSchema`                          | `Session`                         | 401 `invalid_credentials`                                            |
-|           | `GET /session`                   | —                                            | `CurrentSession`                  | 401 `session_expired` / `unauthenticated`                            |
-|           | `DELETE /session`                | —                                            | `204`                             | —                                                                    |
-| NFTs      | `GET /nfts`                      | `NftListParams` na query string              | `NftListResponse` (+ facetas)     | 422                                                                  |
-|           | `GET /nfts/:id`                  | —                                            | `NftDetail`                       | 404                                                                  |
-|           | `GET /nfts/:id/related`          | —                                            | `Nft[]`                           | 404                                                                  |
-| Favoritos | `GET /favorites`                 | —                                            | `Favorites`                       | 401                                                                  |
-|           | `PUT` / `DELETE /favorites/:id`  | —                                            | `Favorites`                       | 401, 404                                                             |
-| Carrinho  | `GET /cart`                      | —                                            | `Cart`                            | —                                                                    |
-|           | `POST /cart/items`               | `addCartItemInputSchema`                     | `Cart`                            | 409 `edition_unavailable` / `quantity_exceeded`                      |
-|           | `PATCH /cart/items/:lineId`      | `updateCartItemInputSchema`                  | `Cart`                            | 404, 409 `quantity_exceeded`                                         |
-|           | `DELETE /cart/items/:lineId`     | —                                            | `Cart`                            | 404                                                                  |
-|           | `PUT` / `DELETE /cart/coupon`    | `applyCouponInputSchema`                     | `Cart`                            | 422 `coupon_invalid` / `coupon_expired`                              |
-|           | `POST /cart/merge`               | `X-Cart-Id` do visitante                     | `Cart`                            | 401                                                                  |
-| Cotação   | `POST /quotes`                   | `createQuoteInputSchema` (rede)              | `Quote`                           | 409 `cart_empty` / `edition_unavailable`, 422 `coupon_expired`       |
-| Carteira  | `POST /wallet-connections`       | `walletConnectionInputSchema`                | `WalletConnection`                | 403 `wallet_rejected`, 422 (endereço fora do formato da rede)        |
-|           | `DELETE /wallet-connections/:id` | —                                            | `204`                             | —                                                                    |
-| Pedidos   | `POST /orders`                   | `createOrderInputSchema` + `Idempotency-Key` | `201 Order` (ou `200` ao repetir) | 409 `quote_outdated` / `quote_expired` / `idempotency_conflict`, 422 |
-|           | `GET /orders/:id`                | —                                            | `Order`                           | 401, 404                                                             |
-| Perfil    | `GET` / `PATCH /profile`         | `profileInputSchema`                         | `Profile`                         | 409 `email_taken` / `username_taken`, 422                            |
-|           | `PUT` / `DELETE /profile/avatar` | `multipart/form-data` (`avatar`)             | `Profile`                         | 422 (tipo ou tamanho)                                                |
-|           | `PUT /profile/password`          | `changePasswordInputSchema`                  | `204`                             | 422 `wrong_password`                                                 |
-| Carteiras | `GET /wallets`                   | —                                            | `Wallets`                         | 401                                                                  |
-|           | `PUT /wallets/primary`           | `walletInputSchema`                          | `Wallet`                          | 422                                                                  |
-|           | `PUT /wallets/secondary`         | `secondaryWalletInputSchema`                 | `Wallet`                          | 422 (inclusive sem carteira principal)                               |
+| Recurso   | Método e caminho                 | Entrada                                      | Resposta                          | Erros relevantes                                                                                                                                                  |
+| --------- | -------------------------------- | -------------------------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sessão    | `POST /auth/sign-up`             | `signUpInputSchema`                          | `201 Session`                     | 409 `email_taken` / `username_taken`, 422                                                                                                                         |
+|           | `POST /auth/sign-in`             | `signInInputSchema`                          | `Session`                         | 401 `invalid_credentials`                                                                                                                                         |
+|           | `GET /session`                   | —                                            | `CurrentSession`                  | 401 `session_expired` / `unauthenticated`                                                                                                                         |
+|           | `DELETE /session`                | —                                            | `204`                             | —                                                                                                                                                                 |
+| NFTs      | `GET /nfts`                      | `NftListParams` na query string              | `NftListResponse` (+ facetas)     | 422                                                                                                                                                               |
+|           | `GET /nfts/:id`                  | —                                            | `NftDetail`                       | 404                                                                                                                                                               |
+|           | `GET /nfts/:id/related`          | —                                            | `Nft[]`                           | 404                                                                                                                                                               |
+| Favoritos | `GET /favorites`                 | —                                            | `Favorites`                       | 401                                                                                                                                                               |
+|           | `PUT` / `DELETE /favorites/:id`  | —                                            | `Favorites`                       | 401, 404                                                                                                                                                          |
+| Carrinho  | `GET /cart`                      | —                                            | `Cart`                            | —                                                                                                                                                                 |
+|           | `POST /cart/items`               | `addCartItemInputSchema`                     | `Cart`                            | 409 `edition_unavailable` / `quantity_exceeded`                                                                                                                   |
+|           | `PATCH /cart/items/:lineId`      | `updateCartItemInputSchema`                  | `Cart`                            | 404, 409 `quantity_exceeded`                                                                                                                                      |
+|           | `DELETE /cart/items/:lineId`     | —                                            | `Cart`                            | 404                                                                                                                                                               |
+|           | `PUT` / `DELETE /cart/coupon`    | `applyCouponInputSchema`                     | `Cart`                            | 422 `coupon_invalid` / `coupon_expired`                                                                                                                           |
+|           | `POST /cart/merge`               | `X-Cart-Id` do visitante                     | `Cart`                            | 401                                                                                                                                                               |
+| Cotação   | `POST /quotes`                   | `createQuoteInputSchema` (rede)              | `Quote`                           | 409 `cart_empty` / `edition_unavailable`, 422 `coupon_expired`                                                                                                    |
+| Carteira  | `POST /wallet-connections`       | `walletConnectionInputSchema`                | `WalletConnection`                | 403 `wallet_rejected`, 422 (endereço fora do formato da rede)                                                                                                     |
+|           | `DELETE /wallet-connections/:id` | —                                            | `204`                             | —                                                                                                                                                                 |
+| Pedidos   | `POST /orders`                   | `createOrderInputSchema` + `Idempotency-Key` | `201 Order` (ou `200` ao repetir) | 409 `quote_outdated` / `quote_expired` / `edition_unavailable` / `cart_empty` / `idempotency_conflict`; 422 (sem conexão de carteira, rede divergente, sem chave) |
+|           | `GET /orders/:id`                | —                                            | `Order`                           | 401, 404                                                                                                                                                          |
+| Perfil    | `GET` / `PATCH /profile`         | `profileInputSchema`                         | `Profile`                         | 409 `email_taken` / `username_taken`, 422                                                                                                                         |
+|           | `PUT` / `DELETE /profile/avatar` | `multipart/form-data` (`avatar`)             | `Profile`                         | 422 (tipo ou tamanho)                                                                                                                                             |
+|           | `PUT /profile/password`          | `changePasswordInputSchema`                  | `204`                             | 422 `wrong_password`                                                                                                                                              |
+| Carteiras | `GET /wallets`                   | —                                            | `Wallets`                         | 401                                                                                                                                                               |
+|           | `PUT /wallets/primary`           | `walletInputSchema`                          | `Wallet`                          | 422                                                                                                                                                               |
+|           | `PUT /wallets/secondary`         | `secondaryWalletInputSchema`                 | `Wallet`                          | 422 (inclusive sem carteira principal)                                                                                                                            |
 
 Todas as rotas privadas podem responder 401 (`session_expired`). Qualquer rota pode responder 5xx (`service_unavailable`), seja em falha transitória ou em cenário de mock.
 
@@ -224,7 +226,7 @@ Para selecionar, use `?scenario=<nome>` (fica salvo) ou `window.__kurioMock.setS
 
 Os testes E2E controlam os casos sensíveis a tempo por essa API, sem depender de timers:
 
-- `reset()` e `setScenario(nome)`.
+- `reset()` e `setScenario(nome)`. Os dois também reiniciam a rede simulada (sequência de latência, contadores de "falhar N vezes" e alternância de respostas fora de ordem), então o cenário recomeça igual.
 - `updateEdition({ nftId, editionId }, { price?, available? })`: altera preço ou estoque e emite `nft.updated`.
 - `expireSessions()`: expira todas as sessões abertas.
 - `disconnectRealtime()`: derruba os sockets. O cliente reconecta sozinho.
@@ -249,7 +251,7 @@ O cliente `socket.io-client` conecta normalmente, e o MSW intercepta o WebSocket
 
 O cliente HTTP (`shared/api/http-client.ts`) é o único ponto que conhece o Axios:
 
-- Calcula os cabeçalhos a cada requisição, como o token de sessão (e, a partir da fase do carrinho, o `X-Cart-Id`).
+- Calcula os cabeçalhos a cada requisição: o token de sessão, para membros, ou o `X-Cart-Id`, para visitantes.
 - Serializa arrays como chaves repetidas (`collections=a&collections=b`).
 - Valida a resposta com o schema zod do contrato. Uma divergência vira `ApiError` do tipo `contract`.
 - Normaliza toda falha em `ApiError` e a repassa ao gancho `onError`.
@@ -294,6 +296,8 @@ As fatias de cada feature ajustam o `staleTime` por recurso, como o carrinho e o
 3. Eventos endereçados a outro usuário são descartados.
 4. O evento é entregue aos **aplicadores** registrados pelas features (`src/app/realtime-appliers.ts`). Cada aplicador escreve no cache usando as regras de versão do domínio (`applyNftUpdate`, `shouldApplyOrderUpdate`), então um evento antigo nunca regride um estado mais novo.
 5. **Após cada reconexão**, todas as queries ativas com `meta: { realtime: true }` são reconsultadas via REST, porque eventos emitidos enquanto o socket estava fora se perderam. A primeira conexão não dispara essa reconsulta.
+6. **A regra de versão vale também para o REST** onde a ordem importa: a query do pedido usa `structuralSharing` com `shouldApplyOrderUpdate`, então uma resposta atrasada dizendo "pendente" não desfaz um "confirmado" que chegou por evento.
+7. **Fallback sem socket.** Enquanto um pedido está pendente, ele é consultado a cada 2 s se o socket estiver fora, e a cada 10 s com o socket conectado (rede de segurança). Ao recarregar a página, o estado vem do REST.
 
 Listeners e subscriptions são liberados por funções de `dispose` devolvidas por cada peça.
 
@@ -411,24 +415,51 @@ Os tokens vêm das variáveis do arquivo Figma e ficam em `src/index.css`, mapea
 - **Títulos em ordem.** "Faixa de preço" é o rótulo de um grupo de controles (`role="group"` + `aria-labelledby`), não um `h3`: ele aparecia antes do primeiro `h2` da página (auditoria `heading-order` do Lighthouse, que não faz parte das regras WCAG do axe).
 - **SEO.** Toda rota tem título e descrição próprios: o NFT usa nome e descrição; o 404 do NFT, do pedido e de URL inexistente têm título de "não encontrado" (uma URL sem rota é reconhecida por ter apenas o match da raiz). Páginas privadas (pagamento, conta e pedidos) recebem `noindex` pelo layout `_authenticated` e ficam em `Disallow` no `robots.txt`. `lang="pt-BR"` no documento.
 
+## Decisões de UX
+
+- **Estado na URL.** Busca, filtros, ordenação, página, edição do NFT e pedido em andamento (`/checkout?pedido=`) ficam na URL: refresh, link compartilhado e voltar/avançar reproduzem a tela.
+- **Nada some durante uma atualização.** Uma nova busca, ou uma cotação nova, mantém o resultado anterior esmaecido, com `aria-busy`, até a resposta chegar. Skeletons só aparecem no primeiro carregamento, com a geometria do conteúdo real.
+- **Erros perto da causa.** Erros de campo aparecem no próprio campo (descrição acessível e foco no primeiro); erros de operação, num alerta junto à ação, com "Tentar novamente" quando repetir pode ajudar (um 403, por exemplo, não oferece). Toasts ficam para confirmar ações concluídas.
+- **Otimismo só onde o erro é barato.** Favoritar responde na hora e volta atrás com aviso se a API falhar. Carrinho, cupom e pedido esperam a API, porque mostram valores que precisam ser os do servidor.
+- **Mudanças que o usuário não fez são anunciadas.** Preço e estoque alterados por evento aparecem num aviso (`aria-live`) no carrinho; no pagamento, bloqueiam a compra até "Aceitar novos valores". A edição que o usuário está vendo nunca troca sozinha.
+- **Visitante compra sem atrito.** O visitante monta o carrinho sem conta. O login (página ou diálogo) leva de volta à página de origem e soma o carrinho do visitante ao do membro.
+- **Sessão expirada não perde trabalho.** O login devolve o usuário à mesma URL; no pagamento, com o que já foi digitado e a carteira conectada.
+- **Pagamento em dois passos explícitos.** Primeiro "Conectar carteira" (que pode ser recusada), depois "Confirmar compra". O pedido pendente tem página própria, que aguenta refresh; o recibo só aparece para pedido confirmado; uma recusa preserva o carrinho e oferece tentar de novo.
+- **Fora do escopo não finge funcionar.** Links editoriais, login social e newsletter abrem "em breve" (tooltip ou toast informativo), sem simular sucesso.
+- **Tela inicial.** Enquanto o app e os mocks carregam, a marca e "Carregando o marketplace…" ocupam a tela, em vez de uma página vazia.
+
+## Limitações
+
+- **Backend na aba.** O backend simulado roda dentro de cada aba. Duas abas compartilham o `localStorage`, mas têm estados em memória e sockets independentes: um evento gerado numa aba não chega à outra.
+- **Socket.IO só por WebSocket.** O long-polling do Engine.IO não é simulado, e o binding do MSW ignora o `auth` do `CONNECT` (o hub lê o pacote cru). Detalhes em [Transporte Socket.IO e limitações](#transporte-socketio-e-limitações).
+- **Carteiras simuladas.** Não há extensão de carteira: a conexão é uma chamada à API simulada, o endereço é validado só pelo formato da rede, e o nome ENS não é resolvido.
+- **Transações simuladas.** O hash é aleatório. O link "Ver no Etherscan" (ou Polygonscan, Solscan) aponta para o explorador real, que não encontrará a transação.
+- **Segurança da demo.** Senhas no mock usam SHA-256 com sal, não um KDF lento. O token de sessão fica no `localStorage`; com uma API real, o ideal seria um cookie `httpOnly`.
+- **Sem histórico de pedidos.** Cada pedido tem sua página (`/pedidos/$id`), mas não há lista de pedidos; a seção "Atividade" está fora do escopo.
+- **Ícone do recibo.** A ilustração "thank-you" do Figma foi substituída por um ícone do lucide, porque a cota da API do Figma acabou antes do download (ver [desvios do Figma](#design-system-e-desvios-do-figma)).
+- **Performance mobile.** Fica abaixo da meta de 90 do Lighthouse, pelo custo do MSW antes do primeiro render (ver [Lighthouse](#lighthouse)).
+- **Baselines visuais.** Foram geradas no Chromium do Playwright, no Linux. Outro sistema operacional pode renderizar fontes com diferenças acima da tolerância e exigir `pnpm test:e2e:update`.
+
 ## Lighthouse
 
-`pnpm lighthouse` gera o build com mocks e mede início e detalhe (`/nfts/sage-nomad-009`) três vezes por perfil. As asserções usam a mediana, e `reports/lighthouse/<perfil>/` guarda o relatório HTML/JSON da execução mediana de cada página. Medição de 31/10, pela manhã:
+`pnpm lighthouse` gera o build com mocks e mede início e detalhe (`/nfts/sage-nomad-009`) três vezes por perfil. As asserções usam a mediana, e `reports/lighthouse/<perfil>/` guarda o relatório HTML/JSON da execução mediana de cada página. Medição final, de 31/10 à tarde, sobre o código entregue:
 
-| Perfil  | Página  | Performance | Acessibilidade | Boas práticas | SEO |    FCP |   LCP |      TBT | CLS |
-| ------- | ------- | ----------: | -------------: | ------------: | --: | -----: | ----: | -------: | --: |
-| Mobile  | Início  |          49 |            100 |           100 | 100 |  1,9 s | 6,1 s | 1 785 ms |   0 |
-| Mobile  | Detalhe |          49 |            100 |           100 | 100 |  1,8 s | 6,0 s | 1 844 ms |   0 |
-| Desktop | Início  |          82 |            100 |           100 | 100 | 0,46 s | 1,5 s |   305 ms |   0 |
-| Desktop | Detalhe |          83 |            100 |           100 | 100 | 0,46 s | 1,4 s |   297 ms |   0 |
+| Perfil  | Página  | Performance | Acessibilidade | Boas práticas | SEO |    FCP |   LCP |    TBT | CLS |
+| ------- | ------- | ----------: | -------------: | ------------: | --: | -----: | ----: | -----: | --: |
+| Mobile  | Início  |          70 |            100 |           100 | 100 |  1,8 s | 5,7 s | 355 ms |   0 |
+| Mobile  | Detalhe |          72 |            100 |           100 | 100 |  1,8 s | 5,5 s | 284 ms |   0 |
+| Desktop | Início  |          98 |            100 |           100 | 100 | 0,41 s | 1,2 s |   0 ms |   0 |
+| Desktop | Detalhe |          98 |            100 |           100 | 100 | 0,41 s | 1,2 s |  30 ms |   0 |
 
-**Ferramentas, ambiente e condições.** Lighthouse 12.6.1 via `@lhci/cli` 0.15.1, no Chromium 156 do Playwright (headless). Node 24.22 e pnpm 12.14. Linux 6.18 no WSL2, com 6 núcleos (`benchmarkIndex` 1 005–1 168, que mede a velocidade de CPU da máquina). Build otimizado servido por `vite preview`, com o cenário padrão dos mocks (latência de 150–350 ms por requisição). Throttling simulado: no mobile, tela de 412×823, RTT de 150 ms, ~1,6 Mbps e CPU 4× mais lenta; no desktop, RTT de 40 ms, ~10 Mbps e CPU sem redução.
+Nas três execuções, a performance mobile variou de 68 a 73; a desktop, de 97 a 98.
 
-Nas três execuções, a performance desktop variou de 82 a 90 (na rodada anterior, de 84 a 92); a mobile, de 47 a 51.
+**Ferramentas, ambiente e condições.** Lighthouse 12.6.1 via `@lhci/cli` 0.15.1, no Chromium 156 do Playwright (headless). Node 24.22 e pnpm 12.14. Linux 6.18 no WSL2, com 6 núcleos. Build otimizado servido por `vite preview`, com o cenário padrão dos mocks (latência de 150–350 ms por requisição). Throttling simulado: no mobile, tela de 412×823, RTT de 150 ms, ~1,6 Mbps e CPU 4× mais lenta; no desktop, RTT de 40 ms, ~10 Mbps e CPU sem redução.
+
+**A máquina pesa no resultado.** O Lighthouse registra a velocidade de CPU no momento da medição (`benchmarkIndex`). Na medição final ele ficou entre 2 200 e 2 980. Numa rodada anterior, com o mesmo código e a máquina ocupada, ficou entre 1 005 e 1 168: o TBT mobile subia para 1,8–2,3 s, e a performance caía para 49 (mobile) e 82–90 (desktop). Para comparar versões, as medições precisam ser da mesma sessão.
 
 **Justificativas.**
 
-- **Performance mobile.** O perfil mobile simula CPU 4× mais lenta e 4G lento. Antes do primeiro render, o navegador baixa e avalia o MSW (~470 KB, quase tudo biblioteca e dependências de cookies), que representa o backend e não existiria com uma API real. Esse custo aparece no LCP e no TBT. Por isso a asserção de performance mobile só avisa abaixo de 0,9.
-- **Comparação com 30/10.** A nota mobile caiu de cerca de 80, medida em 30/10, para cerca de 50, mas a causa é principalmente o ambiente: o build daquele dia, medido agora na mesma máquina, dá 51–57. A diferença restante (+0,4 s de FCP e +0,9 s de LCP antes da tela inicial) vem das fatias entregues depois (carrinho, pagamento e conta), parte delas no grafo inicial.
+- **Performance mobile (70–72, meta 90).** O perfil mobile simula CPU 4× mais lenta e 4G lento. Antes do primeiro render, o navegador baixa e avalia o MSW (~470 KB, quase tudo biblioteca e dependências de cookies), que representa o backend e não existiria com uma API real. Esse custo aparece no LCP (5,5–5,7 s) e no TBT. Por isso a asserção de performance mobile só avisa abaixo de 0,9. Acessibilidade, boas práticas e SEO ficam em 100, e o CLS em 0.
+- **O que já foi feito.** O app baixa em paralelo com o MSW, e o Socket.IO é carregado só na conexão: o LCP mobile caiu de 7,8 s para 5,8 s, na mesma máquina e nas mesmas condições. Uma tela inicial pinta a marca no HTML, e o FCP foi de 3,9 s para 1,8 s. O esqueleto do detalhe com altura de tela levou o CLS de 0,15 a 0.
 - **Testado e descartado.** Declarar `"sideEffects"` no `package.json` permitiu ao bundler descartar a UI não usada pelos barrels das features, mas dividiu o JS inicial em 76 arquivos, e a cadeia de imports mais longa piorou o FCP (de 3,9 s para 4,2 s). Foi revertido.
-- **Gate do desktop.** A asserção de performance falha abaixo de 0,8: a mediana oscila entre 0,82 e 0,92 no mesmo build, e um limite que alterna com o ruído não detecta regressão.
+- **Gate do desktop.** A asserção de performance falha abaixo de 0,8, e não de 0,9: com a máquina ocupada, a mediana do mesmo build chegou a 0,82, e um limite que alterna com o ruído do ambiente não detecta regressão.
