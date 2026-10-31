@@ -85,6 +85,19 @@ describe('reviewQuote', () => {
     expect(reviewQuote(quote, polygon).changes).toEqual([])
   })
 
+  it('still asks about a new price when the network changes at the same time', () => {
+    const polygon = {
+      ...quote,
+      id: 'quote-2',
+      network: 'polygon' as const,
+      networkFee: '0.002',
+      lines: [{ ...line, unitPrice: '1.29', total: '2.58' }],
+    }
+    const review = reviewQuote(quote, polygon)
+    expect(review.reviewed).toBe(quote)
+    expect(review.changes.map((change) => change.type)).toEqual(['price'])
+  })
+
   it('keeps the reviewed quote and lists price changes until they are accepted', () => {
     const pricier = {
       ...quote,

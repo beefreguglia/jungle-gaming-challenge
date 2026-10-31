@@ -9,13 +9,17 @@ export interface QuoteReview {
 }
 
 /**
- * Compares the quote the user reviewed with the latest one from the API. A different
- * network is the user's own choice, and a re-issued quote with the same values changes
- * nothing, so both are taken silently; any real difference must be accepted.
+ * Compares the quote the user reviewed with the latest one from the API. A re-issued quote
+ * with the same values is taken silently, and so is the fee of a network the user just
+ * picked; any other difference (price, quantity, items, discount) must be accepted, even
+ * if the network changed at the same time.
  */
 export function reviewQuote(reviewed: Quote | null, latest: Quote): QuoteReview {
-  if (!reviewed || reviewed.network !== latest.network) return { reviewed: latest, changes: [] }
-  const changes = diffQuotes(reviewed, latest)
+  if (!reviewed) return { reviewed: latest, changes: [] }
+  const otherNetwork = reviewed.network !== latest.network
+  const changes = diffQuotes(reviewed, latest).filter(
+    (change) => !(otherNetwork && change.type === 'fee'),
+  )
   return changes.length === 0 ? { reviewed: latest, changes } : { reviewed, changes }
 }
 
