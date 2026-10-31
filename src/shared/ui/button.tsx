@@ -4,10 +4,10 @@ import type * as React from 'react'
 
 import { cn } from '@/shared/lib/utils'
 
-// Figma: orange fill with dark mono text, or orange outline; small radius on desktop,
-// tall rounded CTAs on mobile ("Comprar NFT", "Conectar e finalizar")
+// Figma: orange fill with dark mono text, or orange outline, always with the 6 px button
+// radius; tall CTAs on mobile ("Comprar NFT", "Conectar e finalizar")
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-sm border border-transparent font-bold whitespace-nowrap transition-colors select-none disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-button border border-transparent font-bold whitespace-nowrap transition-colors select-none disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -17,13 +17,15 @@ const buttonVariants = cva(
         ghost: 'text-foreground hover:bg-card',
         destructive: 'bg-destructive/15 text-destructive hover:bg-destructive/25',
         link: 'h-auto px-0 text-accent-foreground underline-offset-4 hover:underline',
+        // Mobile end-of-page actions (Figma): primary at 100% fading to 80% from left to right
+        cta: 'bg-linear-to-r from-primary to-primary/80 text-primary-foreground hover:from-accent-foreground hover:to-accent-foreground/80',
       },
       size: {
         default: 'h-10 px-4 text-body',
         sm: 'h-8 px-3 text-caption',
         lg: 'h-12 px-6 text-body-lg',
-        // Mobile primary actions from the Figma (60 px, generous radius)
-        xl: 'h-15 rounded-2xl px-6 text-body-lg',
+        // Mobile primary actions from the Figma (60 px tall)
+        xl: 'h-15 px-6 text-body-lg',
         icon: 'size-10',
         'icon-sm': 'size-8',
       },

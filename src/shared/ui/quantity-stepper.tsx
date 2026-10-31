@@ -11,13 +11,13 @@ interface QuantityStepperProps {
   label: string
   min?: number
   disabled?: boolean
-  // "compact": small rounded squares (mobile frames); "round": 30 px circles (desktop detail)
+  // "compact": 20 px circles (cart, mobile detail); "round": 30 px circles (desktop detail)
   variant?: 'compact' | 'round'
   className?: string
 }
 
 const buttonClass = {
-  compact: 'size-5 rounded-md',
+  compact: 'size-5 rounded-full',
   round: 'size-[1.875rem] rounded-full',
 }
 

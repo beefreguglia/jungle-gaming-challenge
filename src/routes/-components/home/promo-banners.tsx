@@ -47,7 +47,7 @@ export function PromoBanners() {
               to="/"
               search={promo.search}
               hash="catalogo"
-              className="mt-1 flex h-10 w-[8.75rem] items-center justify-center gap-2 rounded-sm bg-primary text-14 font-bold text-primary-foreground hover:bg-accent-foreground"
+              className="mt-1 flex h-10 w-[8.75rem] items-center justify-center gap-2 rounded-button bg-primary text-14 font-bold text-primary-foreground hover:bg-accent-foreground"
             >
               Explorar <ArrowRightIcon className="size-4" aria-hidden="true" />
               <span className="sr-only">: {promo.title}</span>

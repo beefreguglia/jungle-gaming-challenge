@@ -79,9 +79,10 @@ export function PaymentPanel({
         <FormAlert message={order.formError} />
         <Button
           type="submit"
+          variant="cta"
           size="xl"
           disabled={order.pending}
-          className="bg-linear-to-br from-accent-foreground to-primary md:h-10 md:rounded-sm md:bg-none md:text-15"
+          className="md:h-10 md:bg-primary md:bg-none md:text-15 md:hover:bg-accent-foreground"
         >
           {order.pending ? 'Confirmando compra…' : 'Confirmar compra'}
         </Button>

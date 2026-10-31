@@ -26,7 +26,7 @@ export function CouponForm({ couponCode }: { couponCode: string | null }) {
 
   if (couponCode) {
     return (
-      <div className="flex items-center justify-between gap-3 rounded-full border border-primary/60 px-4 py-2 md:rounded-sm">
+      <div className="flex items-center justify-between gap-3 rounded-full border border-primary/60 bg-card px-4 py-2 md:rounded-sm md:bg-transparent">
         <p className="text-14">
           Cupom <strong className="text-accent-foreground">{couponCode}</strong> aplicado
         </p>
@@ -59,7 +59,7 @@ export function CouponForm({ couponCode }: { couponCode: string | null }) {
     <form onSubmit={submit} noValidate>
       <FormField label="Código promocional" error={couponError(apply.error)}>
         {(control) => (
-          <div className="flex h-[3.125rem] rounded-full border border-input bg-background p-1 focus-within:border-ring focus-within:outline-2 focus-within:outline-ring has-aria-invalid:border-error md:h-10 md:rounded-sm md:p-0">
+          <div className="flex h-[3.125rem] rounded-full border border-input bg-card p-1 focus-within:border-ring focus-within:outline-2 focus-within:outline-ring has-aria-invalid:border-error md:h-10 md:rounded-sm md:bg-background md:p-0">
             <input
               {...control}
               ref={inputRef}
@@ -75,7 +75,8 @@ export function CouponForm({ couponCode }: { couponCode: string | null }) {
             <Button
               type="submit"
               disabled={apply.isPending}
-              className="h-full rounded-full bg-linear-to-br from-accent-foreground to-primary px-5 text-15 md:rounded-none md:rounded-r-sm md:bg-none md:px-4 md:text-14"
+              // Figma mobile: foreground text on primary fading from 54% to 100% opacity
+              className="h-full rounded-full bg-transparent bg-linear-to-r from-primary/54 to-primary px-5 text-15 text-foreground md:rounded-none md:rounded-r-button md:bg-primary md:bg-none md:px-4 md:text-14 md:text-primary-foreground"
             >
               Aplicar
             </Button>

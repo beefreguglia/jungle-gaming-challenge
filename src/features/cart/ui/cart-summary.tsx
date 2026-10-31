@@ -87,9 +87,10 @@ export function CartSummary({ cart }: { cart: Cart }) {
       <div className="flex flex-col gap-3">
         <Button
           asChild
+          variant="cta"
           size="xl"
           aria-disabled={!ready || undefined}
-          className="bg-linear-to-br from-accent-foreground to-primary md:h-10 md:rounded-sm md:bg-none md:text-15"
+          className="md:h-10 md:bg-primary md:bg-none md:text-15 md:hover:bg-accent-foreground"
         >
           <Link
             to="/checkout"
