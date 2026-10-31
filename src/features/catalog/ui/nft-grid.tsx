@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import type { Nft } from '@/domain/nft'
 import { cn } from '@/shared/lib/utils'
 import { Skeleton } from '@/shared/ui/skeleton'
@@ -14,12 +16,21 @@ const gridClass =
 // Cards visible without scrolling on the first paint; they load eagerly for LCP
 const EAGER_CARDS = 3
 
-export function NftGrid({ items, className }: { items: Nft[]; className?: string }) {
+export type RenderCardActions = (nft: Nft) => ReactNode
+
+interface NftGridProps {
+  items: Nft[]
+  // Overlay actions per card (favorite heart), injected by the page that composes features
+  renderActions?: RenderCardActions
+  className?: string
+}
+
+export function NftGrid({ items, renderActions, className }: NftGridProps) {
   return (
     <ul aria-label="Resultados" className={cn(gridClass, className)}>
       {items.map((nft, index) => (
         <li key={nft.id}>
-          <NftCard nft={nft} priority={index < EAGER_CARDS} />
+          <NftCard nft={nft} priority={index < EAGER_CARDS} actions={renderActions?.(nft)} />
         </li>
       ))}
     </ul>

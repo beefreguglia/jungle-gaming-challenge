@@ -5,20 +5,27 @@ import type { useNftList } from '../api/use-nft-list'
 import { type CatalogChange, CLEARED_FILTERS, hasActiveFilters } from '../model/catalog-filters'
 import { CatalogPagination } from './catalog-pagination'
 import { CatalogEmpty, CatalogError, InvalidPriceRange } from './catalog-states'
-import { NftGrid, NftGridSkeleton } from './nft-grid'
+import { NftGrid, NftGridSkeleton, type RenderCardActions } from './nft-grid'
 
 interface CatalogResultsProps {
   params: NftListParams
   list: ReturnType<typeof useNftList>
   onChange: CatalogChange
   onPageChange: (page: number) => void
+  renderCardActions?: RenderCardActions
 }
 
 /**
  * Grid area with every state: first load (skeleton), refresh (previous results dimmed),
  * empty, error with retry and impossible price range.
  */
-export function CatalogResults({ params, list, onChange, onPageChange }: CatalogResultsProps) {
+export function CatalogResults({
+  params,
+  list,
+  onChange,
+  onPageChange,
+  renderCardActions,
+}: CatalogResultsProps) {
   const { data, error, isPending, isFetching, isPlaceholderData, invalidRange } = list
 
   if (invalidRange) {
@@ -42,6 +49,7 @@ export function CatalogResults({ params, list, onChange, onPageChange }: Catalog
     <div className="flex flex-col gap-10 md:gap-16">
       <NftGrid
         items={data.items}
+        renderActions={renderCardActions}
         className={cn('transition-opacity', isPlaceholderData && 'opacity-60')}
       />
       <CatalogPagination

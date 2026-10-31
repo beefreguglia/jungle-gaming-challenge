@@ -10,17 +10,19 @@ import { CatalogResults } from './catalog-results'
 import { SortSelect, ViewTabs } from './catalog-toolbar'
 import { FeaturedNft } from './featured-nft'
 import { FiltersSheet } from './filters-sheet'
+import type { RenderCardActions } from './nft-grid'
 
 interface CatalogSectionProps {
   params: NftListParams
   onChange: CatalogChange
+  renderCardActions?: RenderCardActions
 }
 
 /**
  * Figma "Products": filter sidebar + featured banner (from lg), toolbar with tabs and sort,
  * grid and pagination. URL state comes in as `params`; every change goes out via `onChange`.
  */
-export function CatalogSection({ params, onChange }: CatalogSectionProps) {
+export function CatalogSection({ params, onChange, renderCardActions }: CatalogSectionProps) {
   const list = useNftList(params)
   const headingRef = useRef<HTMLHeadingElement>(null)
   const total = list.data?.total
@@ -69,7 +71,13 @@ export function CatalogSection({ params, onChange }: CatalogSectionProps) {
         <p aria-live="polite" className="sr-only">
           {total === undefined ? '' : `${resultsLabel(total)}, página ${params.page}`}
         </p>
-        <CatalogResults params={params} list={list} onChange={onChange} onPageChange={goToPage} />
+        <CatalogResults
+          params={params}
+          list={list}
+          onChange={onChange}
+          onPageChange={goToPage}
+          renderCardActions={renderCardActions}
+        />
       </div>
     </section>
   )

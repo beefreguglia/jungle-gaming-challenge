@@ -1,3 +1,4 @@
+import { cartRealtimeApplier } from '@/features/cart'
 import { catalogRealtimeApplier } from '@/features/catalog'
 import { nftDetailRealtimeApplier } from '@/features/nft-detail'
 import type { RealtimeApplier } from '@/shared/api'
@@ -9,4 +10,5 @@ import type { RealtimeApplier } from '@/shared/api'
 export const REALTIME_APPLIERS: readonly RealtimeApplier[] = [
   catalogRealtimeApplier,
   nftDetailRealtimeApplier,
+  cartRealtimeApplier,
 ]
