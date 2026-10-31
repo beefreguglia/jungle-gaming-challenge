@@ -12,7 +12,13 @@ const envSchema = z.object({
   VITE_ENABLE_MOCKS: z.stringbool().default(true),
 })
 
-const parsed = envSchema.safeParse(import.meta.env)
+// Only the app's own keys: passing the whole `import.meta.env` would inline every VITE_*
+// variable of the build host in the bundle (Vercel adds commit, author and project ids)
+const parsed = envSchema.safeParse({
+  VITE_API_URL: import.meta.env.VITE_API_URL,
+  VITE_SOCKET_URL: import.meta.env.VITE_SOCKET_URL,
+  VITE_ENABLE_MOCKS: import.meta.env.VITE_ENABLE_MOCKS,
+})
 
 if (!parsed.success) {
   throw new Error(`Invalid environment variables:\n${z.prettifyError(parsed.error)}`)
