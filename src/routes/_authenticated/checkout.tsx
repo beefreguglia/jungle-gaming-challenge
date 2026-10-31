@@ -1,14 +1,28 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
 
-export const Route = createFileRoute('/_authenticated/checkout')({
-  component: CheckoutPage,
+import { CheckoutPage } from '@/features/checkout'
+
+const checkoutSearchSchema = z.object({
+  // Order created from this page: kept in the URL so a reload resumes it
+  pedido: z.string().optional().catch(undefined),
 })
 
-// Collector form, wallet/network, review and order submission land in Fase 5.6
-function CheckoutPage() {
-  return (
-    <section className="mx-auto max-w-page px-4 py-16">
-      <h1 className="text-heading font-bold">Pagamento</h1>
-    </section>
-  )
+export const Route = createFileRoute('/_authenticated/checkout')({
+  validateSearch: checkoutSearchSchema,
+  head: () => ({
+    meta: [
+      { title: 'Pagamento · Kurio' },
+      {
+        name: 'description',
+        content: 'Escolha a carteira e a rede, revise o pedido e confirme a compra dos seus NFTs.',
+      },
+    ],
+  }),
+  component: CheckoutRoute,
+})
+
+function CheckoutRoute() {
+  const { pedido } = Route.useSearch()
+  return <CheckoutPage key={pedido ?? 'form'} orderId={pedido} />
 }

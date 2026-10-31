@@ -24,7 +24,8 @@ export function hasMobileActionBar(pathname: string): boolean {
   return pathname.startsWith('/nfts/')
 }
 
-// The mobile cart pins its payment summary where the tab bar would be (Figma frame)
+// The mobile cart pins its payment summary where the tab bar would be, and the payment
+// frame shows no tab bar at all (Figma)
 export function hidesMobileTabBar(pathname: string): boolean {
-  return hasMobileActionBar(pathname) || pathname === '/carrinho'
+  return hasMobileActionBar(pathname) || pathname === '/carrinho' || pathname === '/checkout'
 }

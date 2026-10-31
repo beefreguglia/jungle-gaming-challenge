@@ -21,6 +21,7 @@ import { Route as AuthenticatedContaIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedContaCarteirasRouteImport } from './routes/_authenticated/conta/carteiras'
 import { Route as AuthenticatedContaFavoritosRouteImport } from './routes/_authenticated/conta/favoritos'
 import { Route as AuthenticatedContaPerfilRouteImport } from './routes/_authenticated/conta/perfil'
+import { Route as AuthenticatedPedidosOrderIdRouteImport } from './routes/_authenticated/pedidos/$orderId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -84,6 +85,12 @@ const AuthenticatedContaPerfilRoute =
     path: '/perfil',
     getParentRoute: () => AuthenticatedContaRoute,
   } as any)
+const AuthenticatedPedidosOrderIdRoute =
+  AuthenticatedPedidosOrderIdRouteImport.update({
+    id: '/pedidos/$orderId',
+    path: '/pedidos/$orderId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -96,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/conta/carteiras': typeof AuthenticatedContaCarteirasRoute
   '/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
   '/conta/perfil': typeof AuthenticatedContaPerfilRoute
+  '/pedidos/$orderId': typeof AuthenticatedPedidosOrderIdRoute
   '/conta/': typeof AuthenticatedContaIndexRoute
 }
 export interface FileRoutesByTo {
@@ -108,6 +116,7 @@ export interface FileRoutesByTo {
   '/conta/carteiras': typeof AuthenticatedContaCarteirasRoute
   '/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
   '/conta/perfil': typeof AuthenticatedContaPerfilRoute
+  '/pedidos/$orderId': typeof AuthenticatedPedidosOrderIdRoute
   '/conta': typeof AuthenticatedContaIndexRoute
 }
 export interface FileRoutesById {
@@ -123,6 +132,7 @@ export interface FileRoutesById {
   '/_authenticated/conta/carteiras': typeof AuthenticatedContaCarteirasRoute
   '/_authenticated/conta/favoritos': typeof AuthenticatedContaFavoritosRoute
   '/_authenticated/conta/perfil': typeof AuthenticatedContaPerfilRoute
+  '/_authenticated/pedidos/$orderId': typeof AuthenticatedPedidosOrderIdRoute
   '/_authenticated/conta/': typeof AuthenticatedContaIndexRoute
 }
 export interface FileRouteTypes {
@@ -138,6 +148,7 @@ export interface FileRouteTypes {
     | '/conta/carteiras'
     | '/conta/favoritos'
     | '/conta/perfil'
+    | '/pedidos/$orderId'
     | '/conta/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/conta/carteiras'
     | '/conta/favoritos'
     | '/conta/perfil'
+    | '/pedidos/$orderId'
     | '/conta'
   id:
     | '__root__'
@@ -164,6 +176,7 @@ export interface FileRouteTypes {
     | '/_authenticated/conta/carteiras'
     | '/_authenticated/conta/favoritos'
     | '/_authenticated/conta/perfil'
+    | '/_authenticated/pedidos/$orderId'
     | '/_authenticated/conta/'
   fileRoutesById: FileRoutesById
 }
@@ -262,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedContaPerfilRouteImport
       parentRoute: typeof AuthenticatedContaRoute
     }
+    '/_authenticated/pedidos/$orderId': {
+      id: '/_authenticated/pedidos/$orderId'
+      path: '/pedidos/$orderId'
+      fullPath: '/pedidos/$orderId'
+      preLoaderRoute: typeof AuthenticatedPedidosOrderIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
@@ -285,11 +305,13 @@ const AuthenticatedContaRouteWithChildren =
 interface AuthenticatedRouteChildren {
   AuthenticatedCheckoutRoute: typeof AuthenticatedCheckoutRoute
   AuthenticatedContaRoute: typeof AuthenticatedContaRouteWithChildren
+  AuthenticatedPedidosOrderIdRoute: typeof AuthenticatedPedidosOrderIdRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedCheckoutRoute: AuthenticatedCheckoutRoute,
   AuthenticatedContaRoute: AuthenticatedContaRouteWithChildren,
+  AuthenticatedPedidosOrderIdRoute: AuthenticatedPedidosOrderIdRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

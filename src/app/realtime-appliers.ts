@@ -1,5 +1,6 @@
 import { cartRealtimeApplier } from '@/features/cart'
 import { catalogRealtimeApplier } from '@/features/catalog'
+import { orderRealtimeApplier } from '@/features/checkout'
 import { nftDetailRealtimeApplier } from '@/features/nft-detail'
 import type { RealtimeApplier } from '@/shared/api'
 
@@ -11,4 +12,5 @@ export const REALTIME_APPLIERS: readonly RealtimeApplier[] = [
   catalogRealtimeApplier,
   nftDetailRealtimeApplier,
   cartRealtimeApplier,
+  orderRealtimeApplier,
 ]
