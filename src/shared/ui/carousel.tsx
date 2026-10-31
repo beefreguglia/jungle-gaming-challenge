@@ -24,6 +24,8 @@ export function Carousel({ label, children, itemClassName, className }: Carousel
     const list = listRef.current
     if (!list) return
     const measure = () => {
+      // Hidden or not laid out yet (width 0): the page count would be Infinity
+      if (list.clientWidth === 0) return
       setPages(Math.max(1, Math.round(list.scrollWidth / list.clientWidth)))
       setPage(Math.round(list.scrollLeft / list.clientWidth))
     }
