@@ -1,0 +1,26 @@
+[
+  {
+    "url": "http://localhost:4174/",
+    "isRepresentativeRun": true,
+    "htmlPath": "reports/lighthouse/mobile/lh--2026_10_31_05_04_32-report.html",
+    "jsonPath": "reports/lighthouse/mobile/lh--2026_10_31_05_04_32-report.json",
+    "summary": {
+      "performance": 0.49,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  },
+  {
+    "url": "http://localhost:4174/nfts/sage-nomad-009",
+    "isRepresentativeRun": true,
+    "htmlPath": "reports/lighthouse/mobile/lh-nfts_sage_nomad_009-2026_10_31_05_05_19-report.html",
+    "jsonPath": "reports/lighthouse/mobile/lh-nfts_sage_nomad_009-2026_10_31_05_05_19-report.json",
+    "summary": {
+      "performance": 0.49,
+      "accessibility": 1,
+      "best-practices": 1,
+      "seo": 1
+    }
+  }
+]
